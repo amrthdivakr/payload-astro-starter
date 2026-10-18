@@ -12,7 +12,7 @@ New sites clone this repo and keep the default templates. Migrated sites clone i
 
 Payload pieces are added one task at a time. This is still the minimal create-astro tree until those tasks land.
 
-Copy `.env.example` to `.env` and set `PAYLOAD_URL` (local Payload, default `http://localhost:3000`) and `SITE_SLUG` (published tenant slug from Payload). These are used in later tasks; task 1 only documents them.
+Copy `.env.example` to `.env` and set `PAYLOAD_URL` (local Payload, default `http://localhost:3000`) and `SITE_SLUG` (published tenant slug from Payload). The dev server reads them via Astro’s typed env schema and fetches site data from Payload’s public API.
 
 > Official Astro template readme follows.
 

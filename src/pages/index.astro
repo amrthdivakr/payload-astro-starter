@@ -1,4 +1,7 @@
 ---
+import { getPublicSite } from '../lib/payload';
+
+const data = await getPublicSite();
 ---
 
 <html lang="en">
@@ -8,9 +11,16 @@
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<title>{data.site.name}</title>
 	</head>
 	<body>
-		<h1>Astro</h1>
+		<h1>{data.site.name}</h1>
+		{data.pages.length > 0 && (
+			<ul>
+				{data.pages.map((page) => (
+					<li>{page.slug}</li>
+				))}
+			</ul>
+		)}
 	</body>
 </html>
