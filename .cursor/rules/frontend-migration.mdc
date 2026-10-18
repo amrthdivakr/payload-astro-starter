@@ -1,0 +1,16 @@
+---
+description: Frontend starter tasks — one at a time, official Astro commands
+alwaysApply: true
+---
+
+# Frontend migration
+
+Read `docs/progress.md` before changing this repo.
+
+- This repo is the Astro starter (`pnpm create astro@latest -- --template minimal`). Do not scaffold a new Astro app.
+- The user writes the code. When they ask to start a task, give instructions for that task only. Do not edit application code unless they explicitly ask.
+- One task at a time. Plan that task, then build it. Do not plan or build the whole frontend in one shot.
+- Prefer official Astro add commands (`astro add node`, and so on) over hand-rolled adapters.
+- Do not copy grouplfb snapshot files into this starter. Migrated sites clone this repo and overlay elsewhere.
+- GitHub App and Vercel APIs wait until the product plan includes them.
+- When the user says a task is done, update the status table in `docs/progress.md`.

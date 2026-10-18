@@ -1,10 +1,20 @@
-# Astro Starter Kit: Minimal
+# payload-astro-starter
+
+Public Astro starter for Payload-backed sites. Created with:
 
 ```sh
 pnpm create astro@latest -- --template minimal
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+New sites clone this repo and keep the default templates. Migrated sites clone it, then overlay the old site's CSS/JS and section templates.
+
+**Task list:** [`docs/progress.md`](docs/progress.md)
+
+Payload pieces are added one task at a time. This is still the minimal create-astro tree until those tasks land.
+
+Copy `.env.example` to `.env` and set `PAYLOAD_URL` (local Payload, default `http://localhost:3000`) and `SITE_SLUG` (published tenant slug from Payload). These are used in later tasks; task 1 only documents them.
+
+> Official Astro template readme follows.
 
 ## 🚀 Project Structure
 
