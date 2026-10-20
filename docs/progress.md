@@ -16,8 +16,8 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 | | |
 |---|---|
 | Current task | — |
-| Completed | 1, 2, 3 |
-| Next | 4 |
+| Completed | 1, 2, 3, 4 |
+| Next | 5 |
 
 Update this table when a task is finished.
 
@@ -88,7 +88,7 @@ If the public payload has a same-origin redirect whose `from` matches the reques
 
 Done when: `/` and one other published **path** show that page’s title from Payload. Changing the title in admin and refreshing updates the Astro page.
 
-#### 4. Link, media, and rich-text helpers
+#### 4. ~~Link, media, and rich-text helpers~~ **done**
 
 - `hrefFromLink`: custom URL, or page reference → that page’s `path` (import already stores same-site links as page refs; `defaultPopulate` includes `path`).
 - `mediaUrl`: prefix `PAYLOAD_URL` when the media path is root-relative (`/api/media/file/...`).
@@ -210,6 +210,12 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - Form builder pages (grouplfb has no `formBlock`; starter stub is enough)
 
 ## Changelog
+
+### 2026-10-20 — starter task 4
+
+- `src/lib/content.ts`: `hrefFromLink` (custom URL or page `path`, unwraps `{ link }`), `mediaUrl` (prefix `PAYLOAD_URL` on `/api/media/file/...`), `lexicalToHtml` (seed paragraphs → escaped `<p>`). Catch-all uses them on `hero.content`, first `hero.media`, first `hero.links`.
+- Verified: published Acme `/` hero paragraph as HTML (not `[object Object]`) and image `src` on Payload; published grouplfb `/` works the same. Other grouplfb pages still drafts.
+- Next: start task 5.
 
 ### 2026-10-20 — starter task 3
 

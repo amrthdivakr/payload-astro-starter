@@ -1,4 +1,5 @@
 ---
+import { PAYLOAD_URL } from 'astro:env/server';
 import { getPublicSite } from '../lib/payload';
 import {
   findPageByPath,
@@ -6,6 +7,13 @@ import {
   normalizePath,
   redirectDestinationIfValid,
 } from '../lib/match';
+import {
+  hrefFromLink,
+  lexicalToHtml,
+  linkLabel,
+  mediaUrl,
+  parseHero,
+} from '../lib/content';
 
 const data = await getPublicSite();
 const pathname = normalizePath(Astro.url.pathname);
@@ -13,6 +21,11 @@ const pathname = normalizePath(Astro.url.pathname);
 let title: string;
 let heading: string;
 let bodyMessage: string | null = null;
+let heroHtml = '';
+let heroMediaSrc: string | undefined;
+let heroMediaAlt = '';
+let heroLinkHref: string | undefined;
+let heroLinkText: string | undefined;
 
 if (data.pages.length === 0) {
   title = data.site.name;
@@ -24,6 +37,30 @@ if (data.pages.length === 0) {
   if (page) {
     title = page.title;
     heading = page.title;
+
+    const hero = parseHero(page.hero);
+    if (hero) {
+      heroHtml = lexicalToHtml(hero.content);
+
+      const firstMedia = hero.media?.[0];
+      if (firstMedia && typeof firstMedia === 'object') {
+        const src = mediaUrl(firstMedia, PAYLOAD_URL);
+        if (src) {
+          heroMediaSrc = src;
+          heroMediaAlt =
+            typeof firstMedia.alt === 'string' ? firstMedia.alt : '';
+        }
+      }
+
+      const firstLink = hero.links?.[0];
+      if (firstLink) {
+        const href = hrefFromLink(firstLink, data.pages);
+        if (href) {
+          heroLinkHref = href;
+          heroLinkText = linkLabel(firstLink) ?? href;
+        }
+      }
+    }
   } else {
     const redirect = findRedirectByFrom(data.redirects, pathname);
     const destination = redirect
@@ -53,6 +90,9 @@ if (data.pages.length === 0) {
   </head>
   <body>
     <h1>{heading}</h1>
+    {heroHtml && <div set:html={heroHtml} />}
+    {heroMediaSrc && <img src={heroMediaSrc} alt={heroMediaAlt} />}
+    {heroLinkHref && <a href={heroLinkHref}>{heroLinkText}</a>}
     {bodyMessage && <p>{bodyMessage}</p>}
   </body>
 </html>
