@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Frontend migration
 
-Read `docs/progress.md` before changing this repo.
+Read `docs/progress.md` before changing this repo. That file is the current product task list.
 
 - This repo is the Astro starter (`pnpm create astro@latest -- --template minimal`). Do not scaffold a new Astro app.
 - The user writes the code. When they ask to start a task, give instructions for that task only. Do not edit application code unless they explicitly ask.

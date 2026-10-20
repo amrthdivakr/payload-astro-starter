@@ -1,5 +1,7 @@
 # Frontend migration
 
+**This is the current task list.** Payload experiment and page-path (`payload-test/docs/page-path.md`) are done.
+
 Tracks the Astro frontend in two phases:
 
 1. **Starter** — add Payload reading to this repo (created with `pnpm create astro@latest -- --template minimal`).
@@ -15,6 +17,7 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 |---|---|
 | Current task | — |
 | Completed | 1 |
+| Next | 2 |
 
 Update this table when a task is finished.
 
@@ -22,7 +25,7 @@ Update this table when a task is finished.
 
 ## How we work
 
-- One task at a time. Say **start task N**. We plan that task, then build it. Do not start the next until you say the current one is done.
+- This is the current priority list. Say **start task N**. We plan that task, then build it. One task at a time. Do not start the next until you say the current one is done.
 - Do **not** scaffold a new Astro app. This repo is the starter. Prefer official commands (`astro add node`, and so on) over hand-rolled config.
 - Push starter changes to origin after a starter task is done, so the later clone step can use GitHub.
 - GitHub App / Vercel APIs stay out. Local Payload (`payload-test`) + local Astro only.
@@ -49,7 +52,7 @@ New sites later clone the same starter and keep the default templates (AI custom
 
 - Starter is this public GitHub repo. Migration **clones it**, then overlays. It does not generate an Astro tree from empty files.
 - Site output: sibling `E:\dev\sandbox\grouplfb`.
-- Page **paths** are unique per tenant and live in Payload (`docs/page-path.md` in payload-test). Astro matches `page.path` (`/`, `/regulations/ecodesign`). Slug is one segment, not the public URL. Do not hyphenate nested URLs and do not add a `routes.json`.
+- Page **paths** are unique per tenant and live in Payload (`payload-test/docs/page-path.md`, **done**). Astro matches `page.path` (`/`, `/regulations/ecodesign`). Slug is one segment, not the public URL. Do not hyphenate nested URLs and do not add a `routes.json`.
 - Content comes from `GET /api/public/:slug` only. That endpoint returns **published** pages. Import still creates drafts, so `pages: []` until you publish. Draft preview is task 16, not earlier.
 - Starter tasks can verify against any published tenant (Acme is enough). Migration verify uses grouplfb after those pages are published.
 - No view transitions. Old scripts expect a full page load.
@@ -71,21 +74,23 @@ Done when: `pnpm dev` still serves `/`; adapter is in config; env vars are docum
 
 #### 2. Public API client
 
-`src/lib/payload.ts`: server-side `GET ${PAYLOAD_URL}/api/public/${SITE_SLUG}`. Clear error if env is missing. Types for `site`, `pages`, `nav`, `contact`, `footer`, `media`.
+`src/lib/payload.ts`: server-side `GET ${PAYLOAD_URL}/api/public/${SITE_SLUG}`. Clear error if env is missing.
 
-Done when: with Payload running and `SITE_SLUG` set to a published tenant, the client returns that site’s name and page list (a temporary log or title on `/` is enough).
+Types for what that endpoint already returns: `site`, `pages` (include `path`, `parent`, `isHomepage`, `slug`, `title`), `nav`, `contact`, `footer`, `media`, `redirects`. Do not treat `slug` as the public URL.
+
+Done when: with Payload running and `SITE_SLUG` set to a published tenant, the client returns that site’s name and page list with `path` values (a temporary log or title on `/` is enough).
 
 #### 3. Pages from Payload
 
-Page-path tasks 1–4 are done (`path` is on the public API). This is page-path task 5.
-
 Replace the placeholder `src/pages/index.astro` with a catch-all that reads the public API. Match `page.path` (`/` and `/contact`). Generic markup: title, maybe a heading. 404 if the path is missing. If `pages` is empty, show a short “unpublished” message. Do not map `home` → `/` via slug.
+
+If the public payload has a same-origin redirect whose `from` matches the request, follow it (`to` page `path` or custom URL). Grouplfb’s eight URLs are verified in task 9 after those pages are published.
 
 Done when: `/` and one other published **path** show that page’s title from Payload. Changing the title in admin and refreshing updates the Astro page.
 
 #### 4. Link, media, and rich-text helpers
 
-- `hrefFromLink`: custom URL, or page reference → that page’s `path`.
+- `hrefFromLink`: custom URL, or page reference → that page’s `path` (import already stores same-site links as page refs; `defaultPopulate` includes `path`).
 - `mediaUrl`: prefix `PAYLOAD_URL` when the media path is root-relative (`/api/media/file/...`).
 - Lexical JSON → HTML (`p` / text is enough; seed only emits paragraphs).
 
@@ -123,7 +128,7 @@ Done when: `/` loads original stylesheets and scripts; view source shows `/appli
 
 #### 9. Original-path routing
 
-**Superseded by Payload `path` + Redirects** (`docs/page-path.md` tasks 1, 3, 4). Do not write `routes.json`.
+**Superseded by Payload `path` + Redirects** (page-path list done). Do not write `routes.json`.
 
 Catch-all already matches `page.path`. Same-origin aliases come from the public `redirects` list (e.g. `/en/` → `/`). Leave `external` / `file` as link targets, not Astro routes.
 
@@ -200,11 +205,17 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - Scaffolding a second Astro app from empty files
 - Pushing grouplfb to GitHub, Vercel, create-site job
 - Model cleanup / restyling of templates
-- ~~`sourcePath` / slash slugs in Payload~~ — now the Payload `path` field; see payload-test `docs/page-path.md`
+- ~~`sourcePath` / slash slugs in Payload~~ — now the Payload `path` field; page-path list is done (`payload-test/docs/page-path.md`)
 - Same-origin PDFs and file links in Payload — Phase D tasks 18–20 (task 8 still copies mirror files into Astro `public/` for styling)
 - Form builder pages (grouplfb has no `formBlock`; starter stub is enough)
 
 ## Changelog
+
+### 2026-10-20 — this is the current list
+
+- Page-path CMS/import (tasks 1–4) is done. Former page-path task 5 is this list: types in 2, catch-all + redirects in 3, `hrefFromLink` in 4, grouplfb URLs in 9. No `routes.json`.
+- Public API already returns `path`, `parent`, `isHomepage`, and `redirects`. Task 2 types should include them.
+- Next: start task 2.
 
 ### 2026-10-20 — Phase D (SEO and files)
 

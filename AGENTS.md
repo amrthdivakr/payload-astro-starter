@@ -1,6 +1,6 @@
 # Agents
 
-This repo is the Astro starter for the product in `payload-test/docs/product-plan.md`. The task list is `docs/progress.md`.
+This repo is the Astro starter for the product in `payload-test/docs/product-plan.md`. **Current task list:** `docs/progress.md`. Page-path work in payload-test is done.
 
 It was created with `pnpm create astro@latest -- --template minimal`. Do not scaffold a new Astro app.
 
