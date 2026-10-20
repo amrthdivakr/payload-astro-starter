@@ -1,0 +1,166 @@
+---
+import type { PublicFooter, PublicLinkRow, PublicPage } from '../lib/payload';
+import {
+  hrefFromLink,
+  linkLabel,
+  linkOpensNewTab,
+  mediaUrl,
+} from '../lib/content';
+
+interface Props {
+  footer: PublicFooter;
+  pages: PublicPage[];
+  origin: string;
+}
+
+const { footer, pages, origin } = Astro.props;
+
+function footerLogo(f: NonNullable<PublicFooter>) {
+  if (!f.logo || typeof f.logo !== 'object') {
+    return { src: undefined, alt: '' };
+  }
+  const src = mediaUrl(f.logo, origin);
+  const alt =
+    typeof f.logo.alt === 'string' && f.logo.alt.trim()
+      ? f.logo.alt.trim()
+      : '';
+  return { src, alt };
+}
+
+function linkListRows(rows: PublicLinkRow[] | undefined) {
+  if (!rows?.length) return [];
+  return rows
+    .map((row) => {
+      const label = linkLabel(row);
+      if (!label) return null;
+      return {
+        label,
+        href: hrefFromLink(row, pages),
+        newTab: linkOpensNewTab(row),
+      };
+    })
+    .filter(Boolean);
+}
+
+const footerData = footer ? footerLogo(footer) : { src: undefined, alt: '' };
+const tagline =
+  footer?.tagline && typeof footer.tagline === 'string'
+    ? footer.tagline.trim()
+    : undefined;
+const columns = footer?.columns ?? [];
+const legalLinks = linkListRows(footer?.legalLinks);
+const socialLinks = linkListRows(footer?.social);
+const certImages =
+  footer?.certs
+    ?.map((cert) => {
+      if (!cert || typeof cert !== 'object') return null;
+      const src = mediaUrl(cert, origin);
+      if (!src) return null;
+      const alt =
+        typeof cert.alt === 'string' && cert.alt.trim() ? cert.alt.trim() : '';
+      return { src, alt };
+    })
+    .filter(Boolean) ?? [];
+---
+
+{
+  footer && (
+    <footer>
+      {footerData.src && (
+        <p>
+          <img src={footerData.src} alt={footerData.alt} />
+        </p>
+      )}
+      {tagline && <p>{tagline}</p>}
+
+      {columns.map((column) => {
+        const heading =
+          typeof column.heading === 'string' ? column.heading.trim() : '';
+        const links = linkListRows(column.links);
+        if (!heading && links.length === 0) return null;
+        return (
+          <section>
+            {heading && <h2>{heading}</h2>}
+            {links.length > 0 && (
+              <ul>
+                {links.map((link) =>
+                  link ? (
+                    <li>
+                      {link.href ? (
+                        <a
+                          href={link.href}
+                          target={link.newTab ? '_blank' : undefined}
+                          rel={link.newTab ? 'noreferrer' : undefined}
+                        >
+                          {link.label}
+                        </a>
+                      ) : (
+                        <span>{link.label}</span>
+                      )}
+                    </li>
+                  ) : null,
+                )}
+              </ul>
+            )}
+          </section>
+        );
+      })}
+
+      {legalLinks.length > 0 && (
+        <nav aria-label="Legal">
+          <ul>
+            {legalLinks.map((link) =>
+              link ? (
+                <li>
+                  {link.href ? (
+                    <a
+                      href={link.href}
+                      target={link.newTab ? '_blank' : undefined}
+                      rel={link.newTab ? 'noreferrer' : undefined}
+                    >
+                      {link.label}
+                    </a>
+                  ) : (
+                    <span>{link.label}</span>
+                  )}
+                </li>
+              ) : null,
+            )}
+          </ul>
+        </nav>
+      )}
+
+      {socialLinks.length > 0 && (
+        <nav aria-label="Social">
+          <ul>
+            {socialLinks.map((link) =>
+              link ? (
+                <li>
+                  {link.href ? (
+                    <a
+                      href={link.href}
+                      target={link.newTab ? '_blank' : undefined}
+                      rel={link.newTab ? 'noreferrer' : undefined}
+                    >
+                      {link.label}
+                    </a>
+                  ) : (
+                    <span>{link.label}</span>
+                  )}
+                </li>
+              ) : null,
+            )}
+          </ul>
+        </nav>
+      )}
+
+      {certImages.length > 0 && (
+        <p>
+          {certImages.map((cert) =>
+            cert ? <img src={cert.src} alt={cert.alt} /> : null,
+          )}
+        </p>
+      )}
+    </footer>
+  )
+}

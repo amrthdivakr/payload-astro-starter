@@ -1,0 +1,127 @@
+---
+import type { PublicNav, PublicNavItem, PublicPage } from '../lib/payload';
+import {
+  hrefFromLink,
+  linkLabel,
+  linkOpensNewTab,
+  mediaUrl,
+} from '../lib/content';
+
+interface Props {
+  nav: PublicNav;
+  pages: PublicPage[];
+  origin: string;
+}
+
+const { nav, pages, origin } = Astro.props;
+
+function logoFromNav(n: NonNullable<PublicNav>) {
+  if (!n.logo || typeof n.logo !== 'object') {
+    return { src: undefined, alt: '' };
+  }
+  const src = mediaUrl(n.logo, origin);
+  const alt =
+    typeof n.logo.alt === 'string' && n.logo.alt.trim()
+      ? n.logo.alt.trim()
+      : '';
+  return { src, alt };
+}
+
+function renderNavItem(item: PublicNavItem) {
+  const label = linkLabel(item);
+  if (!label) return null;
+  const href = hrefFromLink(item, pages);
+  const newTab = linkOpensNewTab(item);
+  const children = item.children?.filter((c) => linkLabel(c)) ?? [];
+  return { label, href, newTab, children };
+}
+
+const navData = nav ? logoFromNav(nav) : { src: undefined, alt: '' };
+const items = nav?.items?.map(renderNavItem).filter(Boolean) ?? [];
+const ctaHref = nav?.cta ? hrefFromLink(nav.cta, pages) : undefined;
+const ctaLabel = nav?.cta ? linkLabel(nav.cta) : undefined;
+const ctaNewTab = nav?.cta ? linkOpensNewTab(nav.cta) : false;
+const showCta = Boolean(ctaHref && ctaLabel);
+---
+
+{
+  nav && (
+    <header>
+      {navData.src && (
+        <a href="/">
+          <img src={navData.src} alt={navData.alt} />
+        </a>
+      )}
+      {items.length > 0 && (
+        <nav aria-label="Main">
+          <ul>
+            {items.map((entry) =>
+              entry ? (
+                <li>
+                  {entry.href ? (
+                    <a
+                      href={entry.href}
+                      target={entry.newTab ? '_blank' : undefined}
+                      rel={entry.newTab ? 'noreferrer' : undefined}
+                    >
+                      {entry.label}
+                    </a>
+                  ) : (
+                    <span>{entry.label}</span>
+                  )}
+                  {entry.children.length > 0 && (
+                    <ul>
+                      {entry.children.map((child) => {
+                        const childLabel = linkLabel(child);
+                        if (!childLabel) return null;
+                        const childHref = hrefFromLink(child, pages);
+                        const childNewTab = linkOpensNewTab(child);
+                        return (
+                          <li>
+                            {childHref ? (
+                              <a
+                                href={childHref}
+                                target={childNewTab ? '_blank' : undefined}
+                                rel={childNewTab ? 'noreferrer' : undefined}
+                              >
+                                {childLabel}
+                              </a>
+                            ) : (
+                              <span>{childLabel}</span>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </li>
+              ) : null,
+            )}
+          </ul>
+        </nav>
+      )}
+      {showCta && (
+        <p>
+          <a
+            href={ctaHref}
+            target={ctaNewTab ? '_blank' : undefined}
+            rel={ctaNewTab ? 'noreferrer' : undefined}
+          >
+            {ctaLabel}
+          </a>
+        </p>
+      )}
+    </header>
+  )
+}
+
+<style>
+  header nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  header nav ul ul {
+    padding-left: 1rem;
+  }
+</style>

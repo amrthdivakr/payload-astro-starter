@@ -16,8 +16,8 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 | | |
 |---|---|
 | Current task | — |
-| Completed | 1, 2, 3, 4 |
-| Next | 5 |
+| Completed | 1, 2, 3, 4, 5 |
+| Next | 6 |
 
 Update this table when a task is finished.
 
@@ -96,7 +96,7 @@ Done when: `/` and one other published **path** show that page’s title from Pa
 
 Done when: helpers are unit-testable or obviously used on a page (for example a heading `content` field renders as HTML, not `[object Object]`).
 
-#### 5. Default Header and Footer
+#### 5. ~~Default Header and Footer~~ **done**
 
 Generic markup (not grouplfb CSS). Fed by Payload `nav` and `footer`: logo, items + one level of children, optional CTA, footer columns, legal links, certs.
 
@@ -210,6 +210,13 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - Form builder pages (grouplfb has no `formBlock`; starter stub is enough)
 
 ## Changelog
+
+### 2026-10-21 — starter task 5
+
+- `src/layouts/Base.astro` wraps Header, `<main>` slot, Footer. `src/components/Header.astro` / `Footer.astro`: generic markup from Payload `nav` / `footer` (logo, items + one child level, CTA, columns, legal, social, certs). `hrefFromLink` / `linkLabel` / `mediaUrl` / `linkOpensNewTab`. Catch-all still fetches once; chrome also on unpublished and 404.
+- `src/lib/payload.ts`: `PublicNav` / `PublicFooter` field types (not `Record`).
+- Verified: grouplfb `/` nav labels (Home, Our Brands, …) and footer column “Our brands”; logo `src` on Payload; nested children; 404 still shows chrome. Unpublished page refs render as labels without href until those pages are published.
+- Next: start task 6.
 
 ### 2026-10-20 — starter task 4
 

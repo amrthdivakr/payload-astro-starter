@@ -46,9 +46,55 @@ export type PublicRedirect = {
   };
 };
 
-export type PublicNav = Record<string, unknown> | null;
+export type PublicMediaRef = {
+  id?: number;
+  url?: string | null;
+  alt?: string | null;
+};
+
+export type PublicLink = {
+  type?: 'reference' | 'custom' | string;
+  label?: string | null;
+  url?: string | null;
+  newTab?: boolean | null;
+  reference?: {
+    relationTo?: string;
+    value?: number | { id?: number; path?: string; title?: string; slug?: string };
+  } | null;
+};
+
+export type PublicLinkRow = { link?: PublicLink };
+
+export type PublicNavItem = {
+  link?: PublicLink;
+  children?: PublicLinkRow[];
+};
+
+export type PublicNav = {
+  id?: number;
+  title?: string;
+  logo?: PublicMediaRef | number | null;
+  cta?: PublicLink | null;
+  items?: PublicNavItem[];
+} | null;
+
 export type PublicContact = Record<string, unknown> | null;
-export type PublicFooter = Record<string, unknown> | null;
+
+export type PublicFooterColumn = {
+  heading?: string | null;
+  links?: PublicLinkRow[];
+};
+
+export type PublicFooter = {
+  id?: number;
+  title?: string;
+  logo?: PublicMediaRef | number | null;
+  tagline?: string | null;
+  columns?: PublicFooterColumn[];
+  legalLinks?: PublicLinkRow[];
+  social?: PublicLinkRow[];
+  certs?: Array<PublicMediaRef | number> | null;
+} | null;
 export type PublicMedia = Record<string, unknown>;
 
 export type PublicSiteResponse = {

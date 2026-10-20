@@ -14,6 +14,7 @@ import {
   mediaUrl,
   parseHero,
 } from '../lib/content';
+import Base from '../layouts/Base.astro';
 
 const data = await getPublicSite();
 const pathname = normalizePath(Astro.url.pathname);
@@ -79,20 +80,16 @@ if (data.pages.length === 0) {
 }
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
-    <title>{title}</title>
-  </head>
-  <body>
-    <h1>{heading}</h1>
-    {heroHtml && <div set:html={heroHtml} />}
-    {heroMediaSrc && <img src={heroMediaSrc} alt={heroMediaAlt} />}
-    {heroLinkHref && <a href={heroLinkHref}>{heroLinkText}</a>}
-    {bodyMessage && <p>{bodyMessage}</p>}
-  </body>
-</html>
+<Base
+  title={title}
+  nav={data.nav}
+  footer={data.footer}
+  pages={data.pages}
+  origin={PAYLOAD_URL}
+>
+  <h1>{heading}</h1>
+  {heroHtml && <div set:html={heroHtml} />}
+  {heroMediaSrc && <img src={heroMediaSrc} alt={heroMediaAlt} />}
+  {heroLinkHref && <a href={heroLinkHref}>{heroLinkText}</a>}
+  {bodyMessage && <p>{bodyMessage}</p>}
+</Base>

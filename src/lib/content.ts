@@ -4,6 +4,7 @@ import { normalizePath } from './match';
 type LinkPayload = {
   type?: string;
   url?: string | null;
+  newTab?: boolean | null;
   reference?: {
     relationTo?: string;
     value?: number | { id?: number; path?: string };
@@ -164,4 +165,10 @@ export function linkLabel(link: unknown): string | undefined {
     return trimmed || undefined;
   }
   return undefined;
+}
+
+export function linkOpensNewTab(link: unknown): boolean {
+  const raw = unwrapLink(link);
+  if (!raw || typeof raw !== 'object') return false;
+  return (raw as LinkPayload).newTab === true;
 }

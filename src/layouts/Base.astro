@@ -1,0 +1,33 @@
+---
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import type { PublicFooter, PublicNav, PublicPage } from '../lib/payload';
+
+interface Props {
+  title: string;
+  nav: PublicNav;
+  footer: PublicFooter;
+  pages: PublicPage[];
+  origin: string;
+}
+
+const { title, nav, footer, pages, origin } = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <Header nav={nav} pages={pages} origin={origin} />
+    <main>
+      <slot />
+    </main>
+    <Footer footer={footer} pages={pages} origin={origin} />
+  </body>
+</html>
