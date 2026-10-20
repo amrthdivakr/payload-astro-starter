@@ -1,0 +1,35 @@
+---
+import type { PublicLayoutBlock, PublicPage } from '../lib/payload';
+import { pickTemplate } from '../lib/templates';
+
+interface Props {
+  blocks?: PublicLayoutBlock[] | null;
+  pages: PublicPage[];
+  origin: string;
+}
+
+const { blocks, pages, origin } = Astro.props;
+const list = blocks ?? [];
+---
+
+{
+  list.map((block, index) => {
+    const blockType = block.blockType;
+    if (!blockType) {
+      return null;
+    }
+    const customVariant =
+      'customVariant' in block ? block.customVariant : undefined;
+    const Component = pickTemplate(blockType, customVariant);
+    if (!Component) {
+      return null;
+    }
+    const key =
+      'id' in block && block.id != null && block.id !== ''
+        ? block.id
+        : index;
+    return (
+      <Component block={block} pages={pages} origin={origin} key={key} />
+    );
+  })
+}

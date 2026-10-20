@@ -1,0 +1,18 @@
+---
+import type { PublicHtmlBlock, PublicPage } from '../lib/payload';
+
+interface Props {
+  block: PublicHtmlBlock;
+  pages: PublicPage[];
+  origin: string;
+}
+
+const { block } = Astro.props;
+
+const html =
+  typeof block.html === 'string' && block.html.trim()
+    ? block.html.trim()
+    : undefined;
+---
+
+{html && <section set:html={html} />}

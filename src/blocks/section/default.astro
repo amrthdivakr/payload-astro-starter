@@ -1,0 +1,85 @@
+---
+import type { PublicLinkRow, PublicPage, PublicSectionBlock } from '../../lib/payload';
+import {
+  hrefFromLink,
+  lexicalToHtml,
+  linkLabel,
+  linkOpensNewTab,
+  mediaUrl,
+} from '../../lib/content';
+
+interface Props {
+  block: PublicSectionBlock;
+  pages: PublicPage[];
+  origin: string;
+}
+
+const { block, pages, origin } = Astro.props;
+
+function textField(value: string | null | undefined): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  return trimmed || undefined;
+}
+
+function mediaImages(
+  items: PublicSectionBlock['media'],
+  background: PublicSectionBlock['backgroundMedia'],
+) {
+  const all = [...(items ?? []), ...(background ?? [])];
+  return all
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null;
+      const src = mediaUrl(item, origin);
+      if (!src) return null;
+      const alt =
+        typeof item.alt === 'string' && item.alt.trim() ? item.alt.trim() : '';
+      return { src, alt };
+    })
+    .filter(Boolean);
+}
+
+function linkRows(rows: PublicLinkRow[] | null | undefined) {
+  if (!rows?.length) return [];
+  return rows
+    .map((row) => {
+      const label = linkLabel(row);
+      const href = hrefFromLink(row, pages);
+      if (!label || !href) return null;
+      return { label, href, newTab: linkOpensNewTab(row) };
+    })
+    .filter(Boolean);
+}
+
+const eyebrow = textField(block.eyebrow);
+const heading = textField(block.heading);
+const subheading = textField(block.subheading);
+const contentHtml = lexicalToHtml(block.content);
+const images = mediaImages(block.media, block.backgroundMedia);
+const links = linkRows(block.links);
+---
+
+<section>
+  {eyebrow && <p>{eyebrow}</p>}
+  {heading && <h2>{heading}</h2>}
+  {subheading && <p>{subheading}</p>}
+  {contentHtml && <div set:html={contentHtml} />}
+  {images.map((image) =>
+    image ? <img src={image.src} alt={image.alt} /> : null,
+  )}
+  {links.length > 0 && (
+    <p>
+      {links.map((link) =>
+        link ? (
+          <a
+            href={link.href}
+            target={link.newTab ? '_blank' : undefined}
+            rel={link.newTab ? 'noreferrer' : undefined}
+          >
+            {link.label}
+          </a>
+        ) : null,
+      )}
+    </p>
+  )}
+</section>

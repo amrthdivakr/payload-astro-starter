@@ -1,0 +1,21 @@
+---
+import type { PublicHero, PublicPage } from '../lib/payload';
+import { pickTemplate } from '../lib/templates';
+
+interface Props {
+  hero?: PublicHero | null;
+  pages: PublicPage[];
+  origin: string;
+}
+
+const { hero, pages, origin } = Astro.props;
+
+const showHero = Boolean(hero && hero.type !== 'none');
+const Component = showHero ? pickTemplate('hero', hero?.customVariant) : undefined;
+---
+
+{
+  showHero && Component && (
+    <Component hero={hero} pages={pages} origin={origin} />
+  )
+}

@@ -1,0 +1,132 @@
+---
+import type { PublicItemsBlock, PublicLinkRow, PublicPage } from '../../lib/payload';
+import {
+  hrefFromLink,
+  lexicalToHtml,
+  linkLabel,
+  linkOpensNewTab,
+  mediaUrl,
+} from '../../lib/content';
+
+interface Props {
+  block: PublicItemsBlock;
+  pages: PublicPage[];
+  origin: string;
+}
+
+const { block, pages, origin } = Astro.props;
+
+function textField(value: string | null | undefined): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  return trimmed || undefined;
+}
+
+function linkRows(rows: PublicLinkRow[] | null | undefined) {
+  if (!rows?.length) return [];
+  return rows
+    .map((row) => {
+      const label = linkLabel(row);
+      const href = hrefFromLink(row, pages);
+      if (!label || !href) return null;
+      return { label, href, newTab: linkOpensNewTab(row) };
+    })
+    .filter(Boolean);
+}
+
+const eyebrow = textField(block.eyebrow);
+const heading = textField(block.heading);
+const subheading = textField(block.subheading);
+const contentHtml = lexicalToHtml(block.content);
+const links = linkRows(block.links);
+
+const rows =
+  block.items
+    ?.map((item) => {
+      const rowEyebrow = textField(item.eyebrow);
+      const title = textField(item.title);
+      const subtitle = textField(item.subtitle);
+      const text = textField(item.text);
+      let image: { src: string; alt: string } | undefined;
+      if (item.media && typeof item.media === 'object') {
+        const src = mediaUrl(item.media, origin);
+        if (src) {
+          const alt =
+            typeof item.media.alt === 'string' && item.media.alt.trim()
+              ? item.media.alt.trim()
+              : '';
+          image = { src, alt };
+        }
+      }
+      let itemLink: { label: string; href: string; newTab: boolean } | undefined;
+      if (item.enableLink && item.link) {
+        const label = linkLabel(item.link);
+        const href = hrefFromLink(item.link, pages);
+        if (label && href) {
+          itemLink = { label, href, newTab: linkOpensNewTab(item.link) };
+        }
+      }
+      if (
+        !rowEyebrow &&
+        !title &&
+        !subtitle &&
+        !text &&
+        !image &&
+        !itemLink
+      ) {
+        return null;
+      }
+      return { rowEyebrow, title, subtitle, text, image, itemLink };
+    })
+    .filter(Boolean) ?? [];
+---
+
+<section>
+  {eyebrow && <p>{eyebrow}</p>}
+  {heading && <h2>{heading}</h2>}
+  {subheading && <p>{subheading}</p>}
+  {contentHtml && <div set:html={contentHtml} />}
+  {links.length > 0 && (
+    <p>
+      {links.map((link) =>
+        link ? (
+          <a
+            href={link.href}
+            target={link.newTab ? '_blank' : undefined}
+            rel={link.newTab ? 'noreferrer' : undefined}
+          >
+            {link.label}
+          </a>
+        ) : null,
+      )}
+    </p>
+  )}
+  {rows.length > 0 && (
+    <ul>
+      {rows.map((row) =>
+        row ? (
+          <li>
+            {row.rowEyebrow && <p>{row.rowEyebrow}</p>}
+            {row.title && <h3>{row.title}</h3>}
+            {row.subtitle && <p>{row.subtitle}</p>}
+            {row.text && <p>{row.text}</p>}
+            {row.image && (
+              <img src={row.image.src} alt={row.image.alt} />
+            )}
+            {row.itemLink && (
+              <p>
+                <a
+                  href={row.itemLink.href}
+                  target={row.itemLink.newTab ? '_blank' : undefined}
+                  rel={row.itemLink.newTab ? 'noreferrer' : undefined}
+                >
+                  {row.itemLink.label}
+                </a>
+              </p>
+            )}
+          </li>
+        ) : null,
+      )}
+    </ul>
+  )}
+</section>

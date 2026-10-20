@@ -14,6 +14,70 @@ export type PublicPageParent = {
   path: string;
 };
 
+export type PublicLexicalContent = {
+  root?: { children?: unknown[] };
+  [key: string]: unknown;
+};
+
+export type PublicSectionChrome = {
+  eyebrow?: string | null;
+  heading?: string | null;
+  subheading?: string | null;
+  content?: PublicLexicalContent | null;
+  media?: Array<PublicMediaRef | number> | null;
+  backgroundMedia?: Array<PublicMediaRef | number> | null;
+  links?: PublicLinkRow[] | null;
+  variant?: string | null;
+  customVariant?: string | null;
+};
+
+export type PublicHero = PublicSectionChrome & {
+  type?: string | null;
+};
+
+export type PublicSectionBlock = PublicSectionChrome & {
+  blockType: 'section';
+  id?: string | null;
+};
+
+export type PublicItemsRow = {
+  eyebrow?: string | null;
+  title?: string | null;
+  subtitle?: string | null;
+  text?: string | null;
+  media?: PublicMediaRef | number | null;
+  enableLink?: boolean | null;
+  link?: PublicLink | null;
+  id?: string | null;
+};
+
+export type PublicItemsBlock = PublicSectionChrome & {
+  blockType: 'items';
+  items?: PublicItemsRow[] | null;
+  id?: string | null;
+};
+
+export type PublicHtmlBlock = {
+  blockType: 'html';
+  label?: string | null;
+  html?: string | null;
+  id?: string | null;
+  customVariant?: string | null;
+};
+
+export type PublicFormBlock = {
+  blockType: 'formBlock';
+  form?: { title?: string | null } | number | null;
+  id?: string | null;
+};
+
+export type PublicLayoutBlock =
+  | PublicSectionBlock
+  | PublicItemsBlock
+  | PublicHtmlBlock
+  | PublicFormBlock
+  | { blockType?: string; customVariant?: string | null; id?: string | null };
+
 export type PublicPage = {
   id: number;
   slug: string;
@@ -21,8 +85,8 @@ export type PublicPage = {
   path: string;
   parent?: PublicPageParent | number | null;
   isHomepage?: boolean | null;
-  hero?: unknown;
-  layout?: unknown[];
+  hero?: PublicHero | null;
+  layout?: PublicLayoutBlock[] | null;
   meta?: Record<string, unknown>;
 };
 

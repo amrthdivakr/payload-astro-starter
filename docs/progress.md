@@ -16,8 +16,8 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 | | |
 |---|---|
 | Current task | — |
-| Completed | 1, 2, 3, 4, 5 |
-| Next | 6 |
+| Completed | 1, 2, 3, 4, 5, 6 |
+| Next | 7 |
 
 Update this table when a task is finished.
 
@@ -102,7 +102,7 @@ Generic markup (not grouplfb CSS). Fed by Payload `nav` and `footer`: logo, item
 
 Done when: the published tenant’s nav labels and footer columns appear on `/`.
 
-#### 6. Default blocks
+#### 6. ~~Default blocks~~ **done**
 
 `RenderBlocks` picks a template by `blockType` + `customVariant`, else the default. Add only defaults: `hero/default`, `section/default`, `items/default`, `html`, `form` stub. Unknown variants use the default. No grouplfb-specific templates.
 
@@ -210,6 +210,13 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - Form builder pages (grouplfb has no `formBlock`; starter stub is enough)
 
 ## Changelog
+
+### 2026-10-21 — starter task 6
+
+- `src/lib/templates.ts`: `import.meta.glob` picker (`blockType` + `customVariant`, else default). `src/components/Hero.astro` + `src/blocks/RenderBlocks.astro`. Defaults: `hero/default`, `section/default`, `items/default`, `html.astro`, `form.astro` stub. Catch-all keeps page-title `<h1>`; unpublished and 404 still chrome only.
+- `src/lib/payload.ts`: typed `PublicHero` and preferred layout blocks (`section` / `items` / `html` / `formBlock`).
+- Verified: grouplfb `/` hero heading + lexical paragraphs, items rows, section “Do you want to make an impact?”; unknown `customVariant` uses default; 404 still chrome. HTML templates exist on draft `/regulations/ecodesign` and `/regulations/f-gas` (not published). User checks successful.
+- Next: start task 7.
 
 ### 2026-10-21 — starter task 5
 

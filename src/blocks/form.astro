@@ -1,0 +1,24 @@
+---
+import type { PublicFormBlock, PublicPage } from '../lib/payload';
+
+interface Props {
+  block: PublicFormBlock;
+  pages: PublicPage[];
+  origin: string;
+}
+
+const { block } = Astro.props;
+
+let title = 'Form';
+if (block.form && typeof block.form === 'object') {
+  const formTitle =
+    typeof block.form.title === 'string' ? block.form.title.trim() : '';
+  if (formTitle) {
+    title = formTitle;
+  }
+}
+---
+
+<section>
+  <p>{title}</p>
+</section>
