@@ -7,14 +7,43 @@ export type PublicSite = {
   businessSummary?: string | null;
 };
 
+export type PublicPageParent = {
+  id: number;
+  title: string;
+  slug: string;
+  path: string;
+};
+
 export type PublicPage = {
   id: number;
   slug: string;
   title: string;
+  path: string;
+  parent?: PublicPageParent | number | null;
+  isHomepage?: boolean | null;
   hero?: unknown;
   layout?: unknown[];
   meta?: Record<string, unknown>;
-  [key: string]: unknown;
+};
+
+export type PublicRedirectPageRef = {
+  id: number;
+  title: string;
+  slug: string;
+  path: string;
+};
+
+export type PublicRedirect = {
+  id: number;
+  from: string;
+  to?: {
+    type?: ('reference' | 'custom') | null;
+    reference?: {
+      relationTo: 'pages';
+      value: number | PublicRedirectPageRef;
+    } | null;
+    url?: string | null;
+  };
 };
 
 export type PublicNav = Record<string, unknown> | null;
@@ -29,6 +58,7 @@ export type PublicSiteResponse = {
   contact: PublicContact;
   footer: PublicFooter;
   media: PublicMedia[];
+  redirects: PublicRedirect[];
 };
 
 type PublicApiErrorBody = {

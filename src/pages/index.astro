@@ -18,7 +18,7 @@ const data = await getPublicSite();
 		{data.pages.length > 0 && (
 			<ul>
 				{data.pages.map((page) => (
-					<li>{page.slug}</li>
+					<li>{page.path} — {page.title}</li>
 				))}
 			</ul>
 		)}

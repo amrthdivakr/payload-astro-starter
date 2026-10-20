@@ -16,8 +16,8 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 | | |
 |---|---|
 | Current task | — |
-| Completed | 1 |
-| Next | 2 |
+| Completed | 1, 2 |
+| Next | 3 |
 
 Update this table when a task is finished.
 
@@ -72,7 +72,7 @@ Add the Node adapter with the official Astro add command. Server output so each 
 
 Done when: `pnpm dev` still serves `/`; adapter is in config; env vars are documented. The create-astro tree is unchanged except for these additions.
 
-#### 2. Public API client
+#### 2. ~~Public API client~~ **done**
 
 `src/lib/payload.ts`: server-side `GET ${PAYLOAD_URL}/api/public/${SITE_SLUG}`. Clear error if env is missing.
 
@@ -210,6 +210,12 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - Form builder pages (grouplfb has no `formBlock`; starter stub is enough)
 
 ## Changelog
+
+### 2026-10-20 — starter task 2
+
+- `src/lib/payload.ts`: server `GET ${PAYLOAD_URL}/api/public/${SITE_SLUG}`; types include `path`, `parent`, `isHomepage`, `slug`, `title`, and `redirects`. Empty `SITE_SLUG` throws.
+- `/` shows site name and `page.path` (not slug). Verified with published Acme (`/` Home, nested `/parent-two/child-two`). grouplfb still drafts so `pages: []`.
+- Next: start task 3.
 
 ### 2026-10-20 — this is the current list
 
