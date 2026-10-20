@@ -1,0 +1,58 @@
+---
+import { getPublicSite } from '../lib/payload';
+import {
+  findPageByPath,
+  findRedirectByFrom,
+  normalizePath,
+  redirectDestinationIfValid,
+} from '../lib/match';
+
+const data = await getPublicSite();
+const pathname = normalizePath(Astro.url.pathname);
+
+let title: string;
+let heading: string;
+let bodyMessage: string | null = null;
+
+if (data.pages.length === 0) {
+  title = data.site.name;
+  heading = data.site.name;
+  bodyMessage = 'This site is not published yet.';
+} else {
+  const page = findPageByPath(data.pages, pathname);
+
+  if (page) {
+    title = page.title;
+    heading = page.title;
+  } else {
+    const redirect = findRedirectByFrom(data.redirects, pathname);
+    const destination = redirect
+      ? redirectDestinationIfValid(redirect, data.pages, pathname)
+      : undefined;
+
+    if (destination) {
+      return Astro.redirect(destination);
+    }
+
+    Astro.response.status = 404;
+    title = `${data.site.name} — Not found`;
+    heading = 'Not found';
+    bodyMessage = 'The page you requested could not be found.';
+  }
+}
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <h1>{heading}</h1>
+    {bodyMessage && <p>{bodyMessage}</p>}
+  </body>
+</html>

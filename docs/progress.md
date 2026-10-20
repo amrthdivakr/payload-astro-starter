@@ -16,8 +16,8 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 | | |
 |---|---|
 | Current task | — |
-| Completed | 1, 2 |
-| Next | 3 |
+| Completed | 1, 2, 3 |
+| Next | 4 |
 
 Update this table when a task is finished.
 
@@ -80,7 +80,7 @@ Types for what that endpoint already returns: `site`, `pages` (include `path`, `
 
 Done when: with Payload running and `SITE_SLUG` set to a published tenant, the client returns that site’s name and page list with `path` values (a temporary log or title on `/` is enough).
 
-#### 3. Pages from Payload
+#### 3. ~~Pages from Payload~~ **done**
 
 Replace the placeholder `src/pages/index.astro` with a catch-all that reads the public API. Match `page.path` (`/` and `/contact`). Generic markup: title, maybe a heading. 404 if the path is missing. If `pages` is empty, show a short “unpublished” message. Do not map `home` → `/` via slug.
 
@@ -210,6 +210,13 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - Form builder pages (grouplfb has no `formBlock`; starter stub is enough)
 
 ## Changelog
+
+### 2026-10-20 — starter task 3
+
+- Deleted `src/pages/index.astro`. Catch-all `src/pages/[...slug].astro` matches `Astro.url.pathname` to `page.path` (not slug). `src/lib/match.ts`: normalize trailing slashes, page lookup, CMS redirects (`reference` → page `path`, `custom` → URL).
+- Empty `pages` → unpublished message (200) on every URL. Unknown path → HTTP 404 (not a 302 to `/404`).
+- Verified: published Acme `/` Home and `/parent-two/child-two` child two; title change in admin refreshes. grouplfb still drafts so `/` is unpublished.
+- Next: start task 4.
 
 ### 2026-10-20 — starter task 2
 
