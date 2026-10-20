@@ -49,7 +49,7 @@ New sites later clone the same starter and keep the default templates (AI custom
 
 - Starter is this public GitHub repo. Migration **clones it**, then overlays. It does not generate an Astro tree from empty files.
 - Site output: sibling `E:\dev\sandbox\grouplfb`.
-- Page slugs are **unique per tenant**. After re-import, grouplfb home is `home` (Acme can also have `home`). Nested mapped paths still hyphenate because Payload `slugField` disallows `/` (`regulations/ecodesign` → `regulations-ecodesign`).
+- Page **paths** are unique per tenant and live in Payload (`docs/page-path.md` in payload-test). Astro matches `page.path` (`/`, `/regulations/ecodesign`). Slug is one segment, not the public URL. Do not hyphenate nested URLs and do not add a `routes.json`.
 - Content comes from `GET /api/public/:slug` only. That endpoint returns **published** pages. Import still creates drafts, so `pages: []` until you publish. Draft preview is task 16, not earlier.
 - Starter tasks can verify against any published tenant (Acme is enough). Migration verify uses grouplfb after those pages are published.
 - No view transitions. Old scripts expect a full page load.
@@ -77,13 +77,15 @@ Done when: with Payload running and `SITE_SLUG` set to a published tenant, the c
 
 #### 3. Pages from Payload
 
-Replace the placeholder `src/pages/index.astro` with a catch-all that reads the public API. `home` → `/`. Other slugs → `/{slug}`. Generic markup: title, maybe a heading. 404 if the slug is missing. If `pages` is empty, show a short “unpublished” message.
+Page-path tasks 1–4 are done (`path` is on the public API). This is page-path task 5.
 
-Done when: `/` and one other published slug show that page’s title from Payload. Changing the title in admin and refreshing updates the Astro page.
+Replace the placeholder `src/pages/index.astro` with a catch-all that reads the public API. Match `page.path` (`/` and `/contact`). Generic markup: title, maybe a heading. 404 if the path is missing. If `pages` is empty, show a short “unpublished” message. Do not map `home` → `/` via slug.
+
+Done when: `/` and one other published **path** show that page’s title from Payload. Changing the title in admin and refreshing updates the Astro page.
 
 #### 4. Link, media, and rich-text helpers
 
-- `hrefFromLink`: custom URL, or page reference → `/` when slug is `home`, else `/{slug}`.
+- `hrefFromLink`: custom URL, or page reference → that page’s `path`.
 - `mediaUrl`: prefix `PAYLOAD_URL` when the media path is root-relative (`/api/media/file/...`).
 - Lexical JSON → HTML (`p` / text is enough; seed only emits paragraphs).
 
@@ -121,22 +123,11 @@ Done when: `/` loads original stylesheets and scripts; view source shows `/appli
 
 #### 9. Original-path routing
 
-Nav uses old paths (`/`, `/regulations/ecodesign`). Payload stores hyphenated nested slugs. Write `routes.json` (or equivalent) from mapped `sourceUrl` + slug:
+**Superseded by Payload `path` + Redirects** (`docs/page-path.md` tasks 1, 3, 4). Do not write `routes.json`.
 
-| Public path | Payload slug |
-|---|---|
-| `/`, `/en`, `/en/` | `home` |
-| `/contact` | `contact` |
-| `/legal` | `legal` |
-| `/regulations` | `regulations` |
-| `/regulations/ecodesign` | `regulations-ecodesign` |
-| `/regulations/f-gas` | `regulations-f-gas` |
-| `/careers` | `careers` |
-| `/our-history` | `our-history` |
+Catch-all already matches `page.path`. Same-origin aliases come from the public `redirects` list (e.g. `/en/` → `/`). Leave `external` / `file` as link targets, not Astro routes.
 
-Implement same-origin aliases that point at these pages. Leave `external` / `file` as link targets, not Astro routes.
-
-Done when: those eight URLs resolve to the matching published Payload page (not `pages: []`).
+Done when: the eight grouplfb URLs (`/`, `/contact`, `/legal`, `/regulations`, `/regulations/ecodesign`, `/regulations/f-gas`, `/careers`, `/our-history`) resolve to the matching published Payload page, using `path` and CMS redirects only.
 
 #### 10. Migrated Header and Footer
 
@@ -184,16 +175,47 @@ Editors review drafts, then publish. Payload `afterChange` revalidates published
 
 Done when: editing a published heading in admin changes the Astro page without a redeploy.
 
+### Phase D — SEO and files (payload-scrapper + payload-test)
+
+Can start without waiting for Astro 14. Re-import is expected. Still drafts; nothing auto-publishes. Do not copy grouplfb snapshot files into the starter repo.
+
+#### 17. SEO seed and import
+
+Parse per-page SEO from snapshot HTML (`<title>`, meta description, og:title, og:description, og:image, canonical) into mapped `pages.meta` (title, description, image). Import into Payload SEO fields. Do not use document title as `pages.title` (that is path-derived). Done when: a grouplfb page has meta.description (or documented skip if the source page has none) in admin SEO tab after re-seed + re-import.
+
+#### 18. Same-origin files audit
+
+Investigate whether snapshot/seed captures every same-origin file request: images, video, documents, PDFs (e.g. `https://www.grouplfb.com/dA/e1b630c696/fileAsset/LFB%20FRANCE_0094-PED-MAD-2024.pdf`). Compare crawl `redirects[]` kind file, snapshot `www/` files, and live/nav hrefs. Write findings in the task notes / changelog — gaps listed. Done when: a written answer exists for grouplfb: which same-origin files are mirrored, which are URL-only, which are missed.
+
+#### 19. Import files as media and serve from CMS
+
+Seed + import those same-origin files into Payload `media` (or equivalent) and serve them from the CMS public URL, not only as snapshot copies in Astro `public/`. Update mapped media registry and import. Done when: the PED PDF (or one other same-origin PDF) is a media document for tenant grouplfb and its Payload file URL is what links use.
+
+#### 20. Nav (and similar) file links from Payload
+
+Some PDFs are nav items (custom URLs today). Figure out how editors attach a file from Payload (media relationship vs custom URL to `/api/media/file/…`) so nav/footer/block links stay internal. Implement the chosen approach in seed/import (and note what Astro `hrefFromLink` must do later). Done when: a grouplfb nav PDF item is not a live grouplfb.com URL; it points at CMS media. External brand sites stay custom URLs.
+
 ## Explicitly out of scope until listed
 
 - Scaffolding a second Astro app from empty files
 - Pushing grouplfb to GitHub, Vercel, create-site job
 - Model cleanup / restyling of templates
-- `sourcePath` / slash slugs in Payload (routing table handles original paths)
-- Serving PDFs through Payload media (copy snapshot files into `public/` in task 8)
+- ~~`sourcePath` / slash slugs in Payload~~ — now the Payload `path` field; see payload-test `docs/page-path.md`
+- Same-origin PDFs and file links in Payload — Phase D tasks 18–20 (task 8 still copies mirror files into Astro `public/` for styling)
 - Form builder pages (grouplfb has no `formBlock`; starter stub is enough)
 
 ## Changelog
+
+### 2026-10-20 — Phase D (SEO and files)
+
+- Tasks 17–20: SEO from snapshot HTML, same-origin file audit, import files as Payload media, nav PDF links from CMS. Not Astro overlay work; can start before task 14 finishes.
+- CMS `pages.title` is path-derived in seed (not document `<title>`); SEO title stays in meta/SEO fields (task 17).
+
+### 2026-10-19 — public URL is Payload `path`
+
+- Nested URLs are a CMS field, not `routes.json`. Spec: payload-test `docs/page-path.md`.
+- Task 3 blocked on page-path task 1. Task 9 uses `path` + CMS redirects. `hrefFromLink` uses `path`.
+- Do not start the catch-all on `slug`. Next starter task is still **2** (API client); add `path` to types after Payload exposes it.
 
 ### 2026-10-19 — starter task 1
 
