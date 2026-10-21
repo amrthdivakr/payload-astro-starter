@@ -16,8 +16,8 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 | | |
 |---|---|
 | Current task | — |
-| Completed | 1, 2, 3, 4, 5, 6, 7, 8 |
-| Next | 9 |
+| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9 |
+| Next | 10 |
 
 Update this table when a task is finished.
 
@@ -39,7 +39,7 @@ payload-astro-starter   ← Phase A done (tasks 1–6)
         |
         | git clone  (task 7 done)
         v
-E:\dev\sandbox\grouplfb   ← you are here for overlay 9–14
+E:\dev\sandbox\grouplfb   ← you are here for overlay 10–14
   overlay snapshot CSS/JS, chrome, per-template .astro files
         |
         v
@@ -126,7 +126,7 @@ Copy snapshot non-HTML files into the clone’s `public/` (theme CSS/JS, images,
 
 Done when: `/` loads original stylesheets and scripts; view source shows `/application/...` and `/vendor/...`, not a bundled jQuery.
 
-#### 9. Original-path routing
+#### 9. ~~Original-path routing~~ **done**
 
 **Superseded by Payload `path` + Redirects** (page-path list done). Do not write `routes.json`.
 
@@ -210,6 +210,13 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - Form builder pages (grouplfb has no `formBlock`; starter stub is enough)
 
 ## Changelog
+
+### 2026-10-22 — frontend task 9
+
+- No Astro routing code. Catch-all already matches `page.path`; CMS `redirects` cover aliases. No `routes.json`.
+- Published the seven remaining grouplfb drafts (Home was already live). Public API lists all eight paths. Added Redirect `/en` → Home (import had skipped it after stripping the locale prefix).
+- Verified on the grouplfb clone: eight URLs 200 with Payload titles; `/en`, `/en/`, `/products` 302 to `/`; unknown path 404. User checks successful.
+- Next: start task 10.
 
 ### 2026-10-22 — frontend task 8
 
