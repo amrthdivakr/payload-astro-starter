@@ -16,8 +16,8 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 | | |
 |---|---|
 | Current task | — |
-| Completed | 1, 2, 3, 4, 5, 6, 7 |
-| Next | 8 |
+| Completed | 1, 2, 3, 4, 5, 6, 7, 8 |
+| Next | 9 |
 
 Update this table when a task is finished.
 
@@ -39,7 +39,7 @@ payload-astro-starter   ← Phase A done (tasks 1–6)
         |
         | git clone  (task 7 done)
         v
-E:\dev\sandbox\grouplfb   ← you are here for overlay 8–14
+E:\dev\sandbox\grouplfb   ← you are here for overlay 9–14
   overlay snapshot CSS/JS, chrome, per-template .astro files
         |
         v
@@ -210,6 +210,12 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - Form builder pages (grouplfb has no `formBlock`; starter stub is enough)
 
 ## Changelog
+
+### 2026-10-22 — frontend task 8
+
+- `payload-scrapper`: `pnpm overlay` (`src/overlay.ts`) copies snapshot non-HTML `www/` plus sibling `vendor/` into the existing clone `public/` (same root-relative paths). Rewrites clone `Base.astro` from snapshot home HTML: original CSS/JS order, `<script is:inline>`, Payload `{title}`, live cookie-script/GTM. Starter, Header/Footer, and routing unchanged.
+- Verified: `GET /` view source shows `/application/...` and `/vendor/...` (jquery not bundled); those assets return 200. User checks successful.
+- Next: start task 9.
 
 ### 2026-10-21 — frontend task 7
 
