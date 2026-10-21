@@ -16,8 +16,8 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 | | |
 |---|---|
 | Current task | — |
-| Completed | 1, 2, 3, 4, 5, 6 |
-| Next | 7 |
+| Completed | 1, 2, 3, 4, 5, 6, 7 |
+| Next | 8 |
 
 Update this table when a task is finished.
 
@@ -34,12 +34,12 @@ Update this table when a task is finished.
 ## Two phases
 
 ```text
-payload-astro-starter   ← you are here for tasks 1–6
+payload-astro-starter   ← Phase A done (tasks 1–6)
   Payload client, catch-all pages, default Header/Footer/blocks
         |
-        | git clone origin  (task 7)
+        | git clone  (task 7 done)
         v
-E:\dev\sandbox\grouplfb
+E:\dev\sandbox\grouplfb   ← you are here for overlay 8–14
   overlay snapshot CSS/JS, chrome, per-template .astro files
         |
         v
@@ -114,7 +114,7 @@ Phase A is the reusable starter. Push to origin before Phase B.
 
 Generator lives in `payload-scrapper`. It must **clone this starter**, then write site-specific files into the clone. It must not mutate this starter with grouplfb CSS or templates.
 
-#### 7. Clone starter to the site repo
+#### 7. ~~Clone starter to the site repo~~ **done**
 
 `pnpm astro` in `payload-scrapper`: `git clone` this origin into `ASTRO_OUT_DIR` (default `../grouplfb`). Set `SITE_SLUG` in the clone’s `.env.example`. Optional `ASTRO_STARTER_DIR` for a local copy if origin is behind. Do not overlay snapshot files yet.
 
@@ -210,6 +210,12 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - Form builder pages (grouplfb has no `formBlock`; starter stub is enough)
 
 ## Changelog
+
+### 2026-10-21 — frontend task 7
+
+- `payload-scrapper`: `pnpm astro` (`src/astro.ts`) clones the starter into `ASTRO_OUT_DIR` (default `../grouplfb`). `ASTRO_STARTER_DIR` for a local copy when origin is behind; otherwise `ASTRO_STARTER_REPO`. Sets `SITE_SLUG` in the clone’s `.env.example` (and `.env` if missing). Refuses to overwrite an existing destination. No snapshot overlay.
+- Verified: clone from local starter; `GET /` matches starter (Home, hero, items, section); `public/` favicons only; second `pnpm astro` exits 1. User checks successful.
+- Next: start task 8.
 
 ### 2026-10-21 — starter task 6
 
