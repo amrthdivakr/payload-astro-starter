@@ -16,8 +16,8 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 | | |
 |---|---|
 | Current task | — |
-| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 |
-| Next | 12b (before 13) |
+| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12b |
+| Next | 13 |
 
 Update this table when a task is finished.
 
@@ -39,7 +39,7 @@ payload-astro-starter   ← Phase A done (tasks 1–6)
         |
         | git clone  (task 7 done)
         v
-E:\dev\sandbox\grouplfb   ← overlay 12–14; **12b first** (seed parse, then items)
+E:\dev\sandbox\grouplfb   ← overlay 13–14 (12b seed parse done)
   overlay snapshot CSS/JS, chrome, per-template .astro files
         |
         v
@@ -152,7 +152,7 @@ Generate the other hero variants into the clone (`nbx-global-banner`, `nbx-conta
 
 Done when: each of the 8 pages shows the correct hero from Payload.
 
-#### 12b. Seed hero and section parse (`payload-scrapper`) — **do before 13**
+#### 12b. ~~Seed hero and section parse (`payload-scrapper`)~~ **done**
 
 Imported CMS data is wrong on several grouplfb pages. Fix the seed parser, then `pnpm seed` + `pnpm run import`. Do **not** start Clef-flash (seed task 4 stays skipped: these are selector/segment bugs, not “code is unsure”). Do not start items templates (13) until this is done.
 
@@ -223,6 +223,12 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - Form builder pages (grouplfb has no `formBlock`; starter stub is enough)
 
 ## Changelog
+
+### 2026-10-22 — frontend task 12b
+
+- `payload-scrapper`: split legal TOS only when a page has a single `body > section` with 2+ inner `h1`/`h2`; first visible section promotes to `pages.hero` when `HERO_RE` misses; careers sibling `.nbx-heading` + `h4.nbx-title`; `/our-history` heading from `p.nbx-subtitle-large`. Re-seed + re-import (drafts).
+- Kept `pages.hero`. Do not start 13 until this was done.
+- Next: start task **13** (remaining items templates).
 
 ### 2026-10-22 — frontend task 12
 
