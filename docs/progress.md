@@ -16,8 +16,8 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 | | |
 |---|---|
 | Current task | — |
-| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 |
-| Next | 12 |
+| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 |
+| Next | 12b (before 13) |
 
 Update this table when a task is finished.
 
@@ -39,7 +39,7 @@ payload-astro-starter   ← Phase A done (tasks 1–6)
         |
         | git clone  (task 7 done)
         v
-E:\dev\sandbox\grouplfb   ← you are here for overlay 12–14
+E:\dev\sandbox\grouplfb   ← overlay 12–14; **12b first** (seed parse, then items)
   overlay snapshot CSS/JS, chrome, per-template .astro files
         |
         v
@@ -146,11 +146,24 @@ Prove HTML → Astro on **one** `customVariant` (suggested: `brand-promo`). Chee
 
 Done when: that block on a published page matches the snapshot section, and changing the heading in admin updates it.
 
-#### 12. Remaining hero templates
+#### 12. ~~Remaining hero templates~~ **done**
 
 Generate the other hero variants into the clone (`nbx-global-banner`, `nbx-contact-hero`, `nbx-prod-cat-banner`, `fallback-hero`). Hero is `pages.hero`, not a layout block.
 
 Done when: each of the 8 pages shows the correct hero from Payload.
+
+#### 12b. Seed hero and section parse (`payload-scrapper`) — **do before 13**
+
+Imported CMS data is wrong on several grouplfb pages. Fix the seed parser, then `pnpm seed` + `pnpm run import`. Do **not** start Clef-flash (seed task 4 stays skipped: these are selector/segment bugs, not “code is unsure”). Do not start items templates (13) until this is done.
+
+Work in `payload-scrapper` (`seedClassify.ts`, `seedParse.ts`, `seedPage.ts`, `segmentSections.ts` as needed). Re-import into `payload-test`. Astro templates stay; they already bind whatever Payload sends.
+
+- **Hero vs first section:** do not invent `fallback-hero` from the document `<title>` when the first visible body section is the visual intro (`/legal`, `/regulations`, `/regulations/ecodesign`, `/regulations/f-gas`, `/our-history`). Promote that intro to `pages.hero`. `/` and `/contact` already match `HERO_RE` — leave them.
+- **Careers hero fields:** parse sibling `.nbx-heading` blocks; treat `h4.nbx-title` as heading; walk body copy in DOM order; skip text already used as eyebrow/heading. Eyebrow stays “Careers”; heading and body land in their fields, not a scrambled rich-text blob.
+- **Legal blob:** a wrapping `<section>` must not flatten the whole TOS into one Lexical paragraph list. Split on inner `h1`/`h2`, or map TOS-like pages to `html`. Headings must remain headings.
+- **`/our-history`:** do not use `<title>` when it is `index`. Visual title is `p.nbx-subtitle-large` (“Our History”).
+
+Done when: after re-seed + re-import, admin (and `GET /api/public/grouplfb`) shows: those five pages’ heroes are the visual intro (not SEO titles / `index`); careers hero is eyebrow + heading + body in that order; legal is not one unformatted rich-text dump. Home and contact heroes unchanged. Still drafts unless you republish.
 
 #### 13. Remaining items templates
 
@@ -210,6 +223,19 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - Form builder pages (grouplfb has no `formBlock`; starter stub is enough)
 
 ## Changelog
+
+### 2026-10-22 — frontend task 12
+
+- Clone only: `src/blocks/hero/nbx-global-banner.astro`, `nbx-contact-hero.astro`, `nbx-prod-cat-banner.astro`, `fallback-hero.astro`. `pickTemplate` already maps `hero` + `customVariant`; no starter glob change.
+- Catch-all starter `<h1>` hidden on published pages; unpublished/404 still show it.
+- Verified via `GET` on the eight paths: `/` `nbx-global-banner` + CMS image; `/contact` contact hero; `/careers` `#nbx-prod-cat-banner`; five pages `fallback-hero` from Payload (SEO titles / `index` are seed bugs, not template bugs).
+- Next: start task **12b** (seed parse). Do not start 13.
+
+### 2026-10-22 — seed parse before items (task 12b)
+
+- Priority insert: **12b** (seed hero/section parse in `payload-scrapper`) before frontend **13**. Clef-flash stays skipped; parser/segment bugs only.
+- Admin issues this covers: title-only `fallback-hero` with the real intro in layout[0] (`/legal`, `/regulations`, `/regulations/ecodesign`, `/regulations/f-gas`, `/our-history`); careers heading/body mashed into rich text in the wrong order; legal TOS as one unformatted rich-text field.
+- Next: start task 12b. Do not start 13.
 
 ### 2026-10-22 — frontend task 11
 
