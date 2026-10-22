@@ -13,6 +13,9 @@ import Hero from '../components/Hero.astro';
 import RenderBlocks from '../blocks/RenderBlocks.astro';
 
 const data = await getPublicSite();
+
+Astro.cache.set({ maxAge: 3600, tags: ['payload'] });
+
 const pathname = normalizePath(Astro.url.pathname);
 
 let title: string;

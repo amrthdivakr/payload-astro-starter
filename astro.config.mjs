@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig, envField } from 'astro/config';
+import { defineConfig, envField, memoryCache } from 'astro/config';
 
 import node from '@astrojs/node';
 
@@ -9,6 +9,9 @@ export default defineConfig({
   adapter: node({
     mode: 'standalone',
   }),
+  cache: {
+    provider: memoryCache(),
+  },
   env: {
     schema: {
       PAYLOAD_URL: envField.string({
@@ -19,6 +22,10 @@ export default defineConfig({
       SITE_SLUG: envField.string({
         context: 'server',
         access: 'public',
+      }),
+      REVALIDATE_SECRET: envField.string({
+        context: 'server',
+        access: 'secret',
       }),
     },
   },

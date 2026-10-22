@@ -16,8 +16,8 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 | | |
 |---|---|
 | Current task | — |
-| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12b, 13, 14, 15 |
-| Next | 16 |
+| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12b, 13, 14, 15, 16 |
+| Next | 16b |
 
 Update this table when a task is finished.
 
@@ -53,7 +53,7 @@ New sites later clone the same starter and keep the default templates (AI custom
 - Starter is this public GitHub repo. Migration **clones it**, then overlays. It does not generate an Astro tree from empty files.
 - Site output: sibling `E:\dev\sandbox\grouplfb`.
 - Page **paths** are unique per tenant and live in Payload (`payload-test/docs/page-path.md`, **done**). Astro matches `page.path` (`/`, `/regulations/ecodesign`). Slug is one segment, not the public URL. Do not hyphenate nested URLs and do not add a `routes.json`.
-- Content comes from `GET /api/public/:slug` only. That endpoint returns **published** pages. Import still creates drafts, so `pages: []` until you publish. Draft preview is task 16, not earlier.
+- Content comes from `GET /api/public/:slug` only. That endpoint returns **published** pages. Import still creates drafts, so `pages: []` until you publish. Draft preview is task 16b, not earlier.
 - Starter tasks can verify against any published tenant (Acme is enough). Migration verify uses grouplfb after those pages are published.
 - No view transitions. Old scripts expect a full page load.
 - Scripts from the snapshot load with `<script is:inline src="...">` so Astro does not bundle jQuery.
@@ -187,11 +187,24 @@ Screenshot each old page vs the new page (same viewport). Dummy-data check: temp
 
 Done when: differences are explained or fixed; no hardcoded live copy.
 
-#### 16. Review and revalidation
+#### 16. ~~Review and revalidation~~ **done**
 
-Editors review drafts, then publish. Payload `afterChange` revalidates published pages. Optional draft preview.
+Editors review drafts, then publish. Payload `afterChange` revalidates published pages.
 
 Done when: editing a published heading in admin changes the Astro page without a redeploy.
+
+#### 16b. Draft preview
+
+Admin Preview opens the tenant Astro site with unpublished pages. Do not use Payload `/next/preview` (that is the leftover Next frontend).
+
+- `admin.preview` returns an absolute URL on `tenant.productionUrl` (`/api/preview?path=&previewSecret=&token=`). Local grouplfb: `http://localhost:4321`.
+- Astro `GET /api/preview` checks `PREVIEW_SECRET` and the editor JWT (`GET ${PAYLOAD_URL}/api/users/me`), sets httpOnly cookies, redirects to `page.path`. `GET /api/exit-preview` clears them.
+- `GET /api/public/:slug?draft=true` returns drafts only when the request is authenticated (`draft: true`, still `overrideAccess: false`). Anonymous calls stay published-only. Do not unlock drafts with the secret alone.
+- Preview requests skip ISR cache (`Astro.cache.set(false)`). Copy starter files into the clone.
+
+Done when: Preview on an unpublished grouplfb page (e.g. `/our-history`) renders it on local Astro; anonymous `GET /api/public/grouplfb` still omits it. Exit preview returns to published-only.
+
+Live preview (admin iframe, as-you-type) is out of this task.
 
 ### Phase D — SEO and files (payload-scrapper + payload-test)
 
@@ -221,8 +234,22 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - ~~`sourcePath` / slash slugs in Payload~~ — now the Payload `path` field; page-path list is done (`payload-test/docs/page-path.md`)
 - Same-origin PDFs and file links in Payload — Phase D tasks 18–20 (task 8 still copies mirror files into Astro `public/` for styling)
 - Form builder pages (grouplfb has no `formBlock`; starter stub is enough)
+- Live preview (admin iframe that refreshes while editing). Draft preview is 16b.
 
 ## Changelog
+
+### 2026-10-23 — frontend task 16
+
+- Starter + clone: `memoryCache`, catch-all `Astro.cache.set({ maxAge: 3600, tags: ['payload'] })`, `POST /api/revalidate` with `REVALIDATE_SECRET`. Overlay files untouched.
+- `payload-test`: `revalidateFrontend` POSTs to `tenant.productionUrl/api/revalidate` from pages, redirects, nav, footer, contact. Next `revalidatePath` kept. Import still uses `disableRevalidate`.
+- Verified on `astro preview` (dev cache is a no-op): heading change stayed stale until revalidate, then showed without rebuild. Preview does not load `.env` secrets — `node --env-file=.env`.
+- grouplfb Production URL set to `http://localhost:4321`. Restart Payload if it was already running so it picks up `REVALIDATE_SECRET`.
+- Next: start task **16b** (draft preview).
+
+### 2026-10-23 — split draft preview to 16b
+
+- Task 16 is published revalidation only. Draft preview is **16b** (Astro `/api/preview`, public API `?draft=true` with editor JWT). Live preview stays out of scope.
+- Next: start task **16** (review and revalidation). Do not start 16b until 16 is done.
 
 ### 2026-10-23 — frontend task 15
 
