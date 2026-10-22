@@ -16,8 +16,8 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 | | |
 |---|---|
 | Current task | — |
-| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9 |
-| Next | 10 |
+| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 |
+| Next | 12 |
 
 Update this table when a task is finished.
 
@@ -39,7 +39,7 @@ payload-astro-starter   ← Phase A done (tasks 1–6)
         |
         | git clone  (task 7 done)
         v
-E:\dev\sandbox\grouplfb   ← you are here for overlay 10–14
+E:\dev\sandbox\grouplfb   ← you are here for overlay 12–14
   overlay snapshot CSS/JS, chrome, per-template .astro files
         |
         v
@@ -134,13 +134,13 @@ Catch-all already matches `page.path`. Same-origin aliases come from the public 
 
 Done when: the eight grouplfb URLs (`/`, `/contact`, `/legal`, `/regulations`, `/regulations/ecodesign`, `/regulations/f-gas`, `/careers`, `/our-history`) resolve to the matching published Payload page, using `path` and CMS redirects only.
 
-#### 10. Migrated Header and Footer
+#### 10. ~~Migrated Header and Footer~~ **done**
 
 Overlay Header/Footer in the **clone** from `out/grouplfb/outlines/chrome.json`. Keep wrappers and classes. Replace nav lists and footer columns with loops over Payload. Home only: `nbx-transparent-fixed`. Strip old-CMS leftovers (`/api/vtl/…`, locale redirects). English only.
 
 Done when: header and footer look like the snapshot chrome, and labels/hrefs come from Payload.
 
-#### 11. One template conversion
+#### 11. ~~One template conversion~~ **done**
 
 Prove HTML → Astro on **one** `customVariant` (suggested: `brand-promo`). Cheerio substitution: keep classes/wrappers, replace copy/media/links with props, item rows become a loop. No hardcoded source-site text.
 
@@ -210,6 +210,20 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - Form builder pages (grouplfb has no `formBlock`; starter stub is enough)
 
 ## Changelog
+
+### 2026-10-22 — frontend task 11
+
+- Clone only: `src/blocks/items/brand-promo.astro`. `pickTemplate` already maps `items` + `brand-promo`; no starter glob change.
+- Cheerio substitution from snapshot `brand-promo-redge`: wrappers/classes kept; eyebrow/heading/subheading, Visit CTA (`block.links[0]`), and product cards from `block.items`. No hardcoded live copy.
+- One template for both home bands. Friga-Bohn chrome (`nbx-bg-blue`, column order, `btn-blue`) is not in Payload, so both bands use Redge layout. Brand logos and `brand-promo-*` section ids are also not in the items schema.
+- Verified: `GET /` two `nbx-brand-prod-sec` bands, four product cards, CMS `/api/media/file/…` images. User checks successful.
+- Next: start task 12.
+
+### 2026-10-22 — frontend task 10
+
+- Clone only: overlay Header/Footer from snapshot chrome. Payload loops for nav (one child level) and footer columns/legal. Home-only `nbx-transparent-fixed` via `isHomepage`. English `/`; no `/api/vtl/` or locale dropdowns.
+- Code was already in the clone when task 11 started; progress was still “Next: 10”. Recorded done with task 11.
+- Next was task 11.
 
 ### 2026-10-22 — frontend task 9
 
