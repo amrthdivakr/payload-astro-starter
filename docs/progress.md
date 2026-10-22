@@ -16,8 +16,8 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 | | |
 |---|---|
 | Current task | — |
-| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12b |
-| Next | 13 |
+| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12b, 13 |
+| Next | 14 |
 
 Update this table when a task is finished.
 
@@ -39,7 +39,7 @@ payload-astro-starter   ← Phase A done (tasks 1–6)
         |
         | git clone  (task 7 done)
         v
-E:\dev\sandbox\grouplfb   ← overlay 13–14 (12b seed parse done)
+E:\dev\sandbox\grouplfb   ← overlay 14 (13 items templates done)
   overlay snapshot CSS/JS, chrome, per-template .astro files
         |
         v
@@ -165,7 +165,7 @@ Work in `payload-scrapper` (`seedClassify.ts`, `seedParse.ts`, `seedPage.ts`, `s
 
 Done when: after re-seed + re-import, admin (and `GET /api/public/grouplfb`) shows: those five pages’ heroes are the visual intro (not SEO titles / `index`); careers hero is eyebrow + heading + body in that order; legal is not one unformatted rich-text dump. Home and contact heroes unchanged. Still drafts unless you republish.
 
-#### 13. Remaining items templates
+#### 13. ~~Remaining items templates~~ **done**
 
 `select-a-brand-to-visit`, `our-markets-applications`, `nbx-we-care-sec`, `brand-promo` (if not done in 11), `nbx-contact-card`, `we-section`, `ecodesign-and-our-products-families`.
 
@@ -223,6 +223,13 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - Form builder pages (grouplfb has no `formBlock`; starter stub is enough)
 
 ## Changelog
+
+### 2026-10-23 — frontend task 13
+
+- Clone only: `src/blocks/items/` for `select-a-brand-to-visit`, `our-markets-applications`, `nbx-we-care-sec`, `nbx-contact-card`, `we-section`, `ecodesign-and-our-products-families`. `brand-promo` already from task 11. `pickTemplate` unchanged.
+- One chrome when schema lacks brand classes/ids. Globe only if `backgroundMedia[0]`; careers stats and ecodesign `productList` omitted (not in Payload). Spacing/alignment left for later.
+- Verified GET `/` 3 brand boxes + 14 tiles + we-care + 2 brand-promo; `/contact` 2 cards; `/careers` media files; `/regulations/ecodesign` 2 tab rows. User checks successful (spacing later).
+- Next: start task **14** (remaining section and html templates).
 
 ### 2026-10-22 — frontend task 12b
 
