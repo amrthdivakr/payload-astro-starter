@@ -1,6 +1,7 @@
 ---
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import PreviewBar from '../components/PreviewBar.astro';
 import type { PublicFooter, PublicNav, PublicPage } from '../lib/payload';
 
 interface Props {
@@ -24,6 +25,7 @@ const { title, nav, footer, pages, origin } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
+    <PreviewBar />
     <Header nav={nav} pages={pages} origin={origin} />
     <main>
       <slot />

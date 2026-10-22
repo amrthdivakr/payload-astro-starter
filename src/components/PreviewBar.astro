@@ -1,0 +1,48 @@
+---
+const previewActive = Astro.cookies.get('payload-preview')?.value === '1';
+const previewToken = Astro.cookies.get('payload-token')?.value ?? '';
+const inPreview = previewActive && previewToken.length > 0;
+---
+
+{
+  inPreview && (
+    <div class="preview-bar" role="status" aria-label="Preview mode">
+      <span class="preview-bar__label">Preview</span>
+      <a class="preview-bar__exit" href="/api/exit-preview">Exit</a>
+    </div>
+  )
+}
+
+<style>
+  .preview-bar {
+    position: sticky;
+    top: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.35rem 0.75rem;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #f5f5f5;
+    background: #1a1a1a;
+    border-bottom: 1px solid #333;
+  }
+
+  .preview-bar__label {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .preview-bar__exit {
+    color: #f5f5f5;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .preview-bar__exit:hover {
+    color: #fff;
+  }
+</style>

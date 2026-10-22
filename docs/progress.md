@@ -16,8 +16,8 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 | | |
 |---|---|
 | Current task | — |
-| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12b, 13, 14, 15, 16 |
-| Next | 16b |
+| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12b, 13, 14, 15, 16, 16b |
+| Next | 17 |
 
 Update this table when a task is finished.
 
@@ -193,7 +193,7 @@ Editors review drafts, then publish. Payload `afterChange` revalidates published
 
 Done when: editing a published heading in admin changes the Astro page without a redeploy.
 
-#### 16b. Draft preview
+#### 16b. ~~Draft preview~~ **done**
 
 Admin Preview opens the tenant Astro site with unpublished pages. Do not use Payload `/next/preview` (that is the leftover Next frontend).
 
@@ -237,6 +237,13 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - Live preview (admin iframe that refreshes while editing). Draft preview is 16b.
 
 ## Changelog
+
+### 2026-10-23 — frontend task 16b
+
+- Starter + clone: `GET /api/preview` (secret + `GET /api/users/me` JWT), httpOnly cookies, `GET /api/exit-preview`, catch-all draft fetch with `Astro.cache.set(false)`. Minimal Preview/Exit bar in `Base.astro`.
+- `payload-test`: `GET /api/public/:slug?draft=true` only with `req.user`; `admin.preview` absolute URL on `tenant.productionUrl`. `admin.livePreview` still leftover `/next/preview`.
+- Verified: anonymous public API omits `/our-history`; `?draft=true` without JWT still published-only; preview gates 403/400/500; exit-preview 302 to `/`. Bar hidden without cookies, present with them.
+- Next: start task **17** (SEO seed and import). Live preview stays out.
 
 ### 2026-10-23 — frontend task 16
 

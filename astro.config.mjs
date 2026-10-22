@@ -27,6 +27,10 @@ export default defineConfig({
         context: 'server',
         access: 'secret',
       }),
+      PREVIEW_SECRET: envField.string({
+        context: 'server',
+        access: 'secret',
+      }),
     },
   },
 });

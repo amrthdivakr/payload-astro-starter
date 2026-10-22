@@ -12,9 +12,19 @@ import Base from '../layouts/Base.astro';
 import Hero from '../components/Hero.astro';
 import RenderBlocks from '../blocks/RenderBlocks.astro';
 
-const data = await getPublicSite();
+const previewActive = Astro.cookies.get('payload-preview')?.value === '1';
+const previewToken = Astro.cookies.get('payload-token')?.value ?? '';
+const inPreview = previewActive && previewToken.length > 0;
 
-Astro.cache.set({ maxAge: 3600, tags: ['payload'] });
+const data = inPreview
+  ? await getPublicSite({ draft: true, token: previewToken })
+  : await getPublicSite();
+
+if (inPreview) {
+  Astro.cache.set(false);
+} else {
+  Astro.cache.set({ maxAge: 3600, tags: ['payload'] });
+}
 
 const pathname = normalizePath(Astro.url.pathname);
 

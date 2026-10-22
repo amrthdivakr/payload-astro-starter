@@ -175,7 +175,14 @@ type PublicApiErrorBody = {
   error?: string;
 };
 
-export async function getPublicSite(): Promise<PublicSiteResponse> {
+export type GetPublicSiteOptions = {
+  draft?: boolean;
+  token?: string;
+};
+
+export async function getPublicSite(
+  options?: GetPublicSiteOptions,
+): Promise<PublicSiteResponse> {
   const slug = SITE_SLUG.trim();
 
   if (!slug) {
@@ -184,9 +191,22 @@ export async function getPublicSite(): Promise<PublicSiteResponse> {
     );
   }
 
+  const useDraft =
+    options?.draft === true &&
+    typeof options.token === 'string' &&
+    options.token.length > 0;
+
   const origin = PAYLOAD_URL.replace(/\/+$/, '');
-  const url = `${origin}/api/public/${encodeURIComponent(slug)}`;
-  const response = await fetch(url);
+  const url = useDraft
+    ? `${origin}/api/public/${encodeURIComponent(slug)}?draft=true`
+    : `${origin}/api/public/${encodeURIComponent(slug)}`;
+
+  const headers: HeadersInit = {};
+  if (useDraft) {
+    headers.Authorization = `JWT ${options!.token}`;
+  }
+
+  const response = await fetch(url, { headers });
 
   if (!response.ok) {
     let message = `Payload public API failed (${response.status})`;
