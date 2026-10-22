@@ -16,8 +16,8 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 | | |
 |---|---|
 | Current task | — |
-| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12b, 13, 14 |
-| Next | 15 |
+| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12b, 13, 14, 15 |
+| Next | 16 |
 
 Update this table when a task is finished.
 
@@ -223,6 +223,15 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - Form builder pages (grouplfb has no `formBlock`; starter stub is enough)
 
 ## Changelog
+
+### 2026-10-23 — frontend task 15
+
+- `payload-scrapper`: `pnpm qa:copy` scans `out/<site>/mapped/site.json` phrases against clone `src/**/*.astro` markup (no snapshot copy in templates). `pnpm qa:screens` — Playwright 1440×900, snapshot `:4173` vs Astro `:4321`, PNGs + `report.json` under `out/grouplfb/qa/`. Overlay hide runs after `goto` (plus `addInitScript` + DOM removal) so Cookie-Script/GTM do not dominate diffs. Optional `pnpm qa:publish-history` (Local API; failed: publish rejected empty `layout` on id 18 — publish `/our-history` in admin before re-screens).
+- Clone: `nbx-prod-cat-banner.astro` binds `hero.backgroundMedia` / `hero.media` via `mediaUrl` (section background + optional `career-right` figure). **Careers hero still has no CMS media** (`GET /api/public/grouplfb` → empty `media` / `backgroundMedia`); snapshot `#nbx-prod-cat-banner` HTML has no image either — the yellow-vest band on old careers is the following `make-an-impact` inline `make-impact-bg.jpg`, which seed did not map into Payload (grey band until seed/import adds section background media).
+- `qa:copy` exit 0 (110 phrases, 38 templates).
+- Screenshot diff ratios (informational): `/` 0.26, `/contact` 0.07, `/legal` 0.10, `/regulations` 0.38, `/regulations/ecodesign` 0.08, `/regulations/f-gas` 0.51, `/careers` 0.61, `/our-history` **new HTTP 404** (unpublished).
+- Explained visual gaps (no restyle): `brand-promo` Redge chrome; brand logos / `brand-promo-*` ids; we-care globe; careers stats; ecodesign `productList`; omitted html/section fields; `maximum-efficiency-performance` one chrome; CMS media URLs vs `/dA/…`; spacing/alignment deferred.
+- Next: start task **16** (review and revalidation).
 
 ### 2026-10-23 — frontend task 14
 
