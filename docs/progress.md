@@ -16,8 +16,8 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 | | |
 |---|---|
 | Current task | — |
-| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12b, 13 |
-| Next | 14 |
+| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12b, 13, 14 |
+| Next | 15 |
 
 Update this table when a task is finished.
 
@@ -39,7 +39,7 @@ payload-astro-starter   ← Phase A done (tasks 1–6)
         |
         | git clone  (task 7 done)
         v
-E:\dev\sandbox\grouplfb   ← overlay 14 (13 items templates done)
+E:\dev\sandbox\grouplfb   ← overlay 14 done
   overlay snapshot CSS/JS, chrome, per-template .astro files
         |
         v
@@ -171,7 +171,7 @@ Done when: after re-seed + re-import, admin (and `GET /api/public/grouplfb`) sho
 
 Done when: repeating rows on those pages come from Payload `items`, not duplicated static HTML.
 
-#### 14. Remaining section and html templates
+#### 14. ~~Remaining section and html templates~~ **done**
 
 The rest of the section `customVariant` ids plus html (`why-ce`, `the-aim-if-the-f-gas-regulation-is-to`). Defaults from the starter cover unknown variants.
 
@@ -223,6 +223,13 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - Form builder pages (grouplfb has no `formBlock`; starter stub is enough)
 
 ## Changelog
+
+### 2026-10-23 — frontend task 14
+
+- Clone only: `src/blocks/html/` for `why-ce`, `the-aim-if-the-f-gas-regulation-is-to`, `2020`, `our-longterm-sustainable-journey`; `src/blocks/section/` for the 12 remaining section variants. `pickTemplate` unchanged.
+- Payload `html` has no `customVariant`; `RenderBlocks` uses `label`. Default `html.astro` is a Fragment pass-through (no extra `<section>`). One chrome for `maximum-efficiency-performance`. Fields not in Payload omitted (iframe, privacy PDF, banner bg).
+- Verified GET `/`, `/contact`, `/legal`, `/regulations`, `/regulations/ecodesign`, `/regulations/f-gas`, `/careers` 200 with `/application/` + `/vendor/`. `/our-history` 404 (not in live public API after 12b drafts). User moved on with remaining visual issues.
+- Next: start task **15** (QA).
 
 ### 2026-10-23 — frontend task 13
 
