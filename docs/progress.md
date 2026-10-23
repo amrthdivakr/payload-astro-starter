@@ -16,8 +16,8 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 | | |
 |---|---|
 | Current task | — |
-| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12b, 13, 14, 15, 16, 16b |
-| Next | 17 |
+| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12b, 13, 14, 15, 16, 16b, 17 |
+| Next | 18 |
 
 Update this table when a task is finished.
 
@@ -210,9 +210,9 @@ Live preview (admin iframe, as-you-type) is out of this task.
 
 Can start without waiting for Astro 14. Re-import is expected. Still drafts; nothing auto-publishes. Do not copy grouplfb snapshot files into the starter repo.
 
-#### 17. SEO seed and import
+#### 17. ~~SEO seed and import~~ **done**
 
-Parse per-page SEO from snapshot HTML (`<title>`, meta description, og:title, og:description, og:image, canonical) into mapped `pages.meta` (title, description, image). Import into Payload SEO fields. Do not use document title as `pages.title` (that is path-derived). Done when: a grouplfb page has meta.description (or documented skip if the source page has none) in admin SEO tab after re-seed + re-import.
+Parse per-page SEO from snapshot HTML (`<title>`, meta description, og:title, og:description, og:image, canonical) into mapped `pages.meta` (title, description, image). Import into Payload SEO fields. `pages.title` is the snapshot document `<title>` (Astro uses it for the HTML title tag). SEO `meta.title` is `og:title`. Do not import `og:image` when the snapshot file is not a real image. Done when: a grouplfb page has meta.description (or documented skip if the source page has none) in admin SEO tab after re-seed + re-import.
 
 #### 18. Same-origin files audit
 
@@ -235,8 +235,16 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - Same-origin PDFs and file links in Payload — Phase D tasks 18–20 (task 8 still copies mirror files into Astro `public/` for styling)
 - Form builder pages (grouplfb has no `formBlock`; starter stub is enough)
 - Live preview (admin iframe that refreshes while editing). Draft preview is 16b.
+- Favicon in Payload — no CMS field. Migrated sites still use the overlay `<link rel="icon">` (grouplfb: `/lib/images/favicons/emea.ico`). Add a tenant/media field later.
 
 ## Changelog
+
+### 2026-10-23 — frontend task 17
+
+- `payload-scrapper`: parse snapshot `<title>` / meta description / og:* into `pages.meta`. `pages.title` is the snapshot document title (not path-derived) because Astro `<title>` uses it. SEO `meta.title` stays `og:title`. Skip empty descriptions (`/our-history`). Skip `og:image` when the local file is HTML (grouplfb `/images/default.png` redirects to home).
+- `payload-test` import: omit empty meta strings; skip media files that look like HTML.
+- Favicon is **not** in Payload. Overlay still hardcodes the snapshot icon. Add a CMS field later.
+- Next: start task **18** (same-origin files audit).
 
 ### 2026-10-23 — frontend task 16b
 
