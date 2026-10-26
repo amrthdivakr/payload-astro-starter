@@ -16,8 +16,8 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 | | |
 |---|---|
 | Current task | — |
-| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12b, 13, 14, 15, 16, 16b, 17, 18 |
-| Next | 19 |
+| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12b, 13, 14, 15, 16, 16b, 17, 18, 19 |
+| Next | 20 |
 
 Update this table when a task is finished.
 
@@ -218,7 +218,7 @@ Parse per-page SEO from snapshot HTML (`<title>`, meta description, og:title, og
 
 Investigate whether snapshot/seed captures every same-origin file request: images, video, documents, PDFs (e.g. `https://www.grouplfb.com/dA/e1b630c696/fileAsset/LFB%20FRANCE_0094-PED-MAD-2024.pdf`). Compare crawl `redirects[]` kind file, snapshot `www/` files, and live/nav hrefs. Write findings in the task notes / changelog — gaps listed. Done when: a written answer exists for grouplfb: which same-origin files are mirrored, which are URL-only, which are missed.
 
-#### 19. Import files as media and serve from CMS
+#### 19. ~~Import files as media and serve from CMS~~ **done**
 
 Seed + import those same-origin files into Payload `media` (or equivalent) and serve them from the CMS public URL, not only as snapshot copies in Astro `public/`. Update mapped media registry and import. Done when: the PED PDF (or one other same-origin PDF) is a media document for tenant grouplfb and its Payload file URL is what links use.
 
@@ -238,6 +238,14 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - Favicon in Payload — no CMS field. Migrated sites still use the overlay `<link rel="icon">` (grouplfb: `/lib/images/favicons/emea.ico`). Add a tenant/media field later.
 
 ## Changelog
+
+### 2026-10-26 — frontend task 19 (import files as Payload media)
+
+- `payload-scrapper`: seed registers snapshot `assets[]` with `isFileUrl` into `mapped.media[]` (`registerSnapshotFiles` then `attachSnapshotAssets`). grouplfb: 52 media (38 images + 14 PDFs). Mapped nav/footer still hold live `grouplfb.com` custom URLs; import rewrites after upload.
+- `payload-test` import: upload those files to tenant `media`; rewrite custom file links to `getServerSideURL()` + `doc.url`. 7 nav/footer PDF hrefs rewritten. File upload failures throw (not skipped). Link schema unchanged (`relationTo: ['pages']` only).
+- **PED** — media doc `LFB FRANCE_0094-PED-MAD-2024.pdf`; nav URL `http://localhost:3000/api/media/file/LFB%20FRANCE_0094-PED-MAD-2024.pdf` (`200`, `application/pdf`). No live `grouplfb.com` PDF hrefs in public API nav/footer.
+- Html-block EcoDesign PDF hrefs not rewritten (still uploaded as media). Overlay `public/` copies untouched. Astro `hrefFromLink` unchanged (task 20).
+- Next: start task **20** (nav file links from Payload — media relationship vs custom CMS URL).
 
 ### 2026-10-26 — frontend task 18 (same-origin files audit)
 
