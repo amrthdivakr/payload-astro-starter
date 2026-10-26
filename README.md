@@ -8,7 +8,7 @@ pnpm create astro@latest -- --template minimal
 
 New sites clone this repo and keep the default templates. Migrated sites clone it, then overlay the old site's CSS/JS and section templates.
 
-**Task list:** [`docs/progress.md`](docs/progress.md)
+**Docs catalog:** [`docs/progress.md`](docs/progress.md). **Task list:** [`docs/frontend-migration.md`](docs/frontend-migration.md) (tasks 1–19 complete).
 
 Payload pieces are added one task at a time. This is still the minimal create-astro tree until those tasks land.
 

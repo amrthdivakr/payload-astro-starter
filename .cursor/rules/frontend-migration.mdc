@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Frontend migration
 
-Read `docs/progress.md` before changing this repo. That file is the current product task list.
+Read `docs/progress.md` before changing this repo. Task list: `docs/frontend-migration.md` (tasks 1–19 complete). Product plan: `payload-test/docs/cms/product-plan.md`.
 
 - This repo is the Astro starter (`pnpm create astro@latest -- --template minimal`). Do not scaffold a new Astro app.
 - The user writes the code. When they ask to start a task, give instructions for that task only. Do not edit application code unless they explicitly ask.
@@ -13,4 +13,4 @@ Read `docs/progress.md` before changing this repo. That file is the current prod
 - Prefer official Astro add commands (`astro add node`, and so on) over hand-rolled adapters.
 - Do not copy grouplfb snapshot files into this starter. Migrated sites clone this repo and overlay elsewhere.
 - GitHub App and Vercel APIs wait until the product plan includes them.
-- When the user says a task is done, update the status table in `docs/progress.md`.
+- When the user says a task is done, update `docs/frontend-migration.md` and `docs/progress.md`.

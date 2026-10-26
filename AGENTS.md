@@ -1,6 +1,6 @@
 # Agents
 
-This repo is the Astro starter for the product in `payload-test/docs/product-plan.md`. **Current task list:** `docs/progress.md`. Page-path work in payload-test is done.
+This repo is the Astro starter for the product in `payload-test/docs/cms/product-plan.md`. Read `docs/progress.md` first. **Task list:** `docs/frontend-migration.md` (tasks 1–19 complete). Page-path work in payload-test is done.
 
 It was created with `pnpm create astro@latest -- --template minimal`. Do not scaffold a new Astro app.
 
@@ -11,6 +11,7 @@ Working rules:
 - Prefer official Astro add commands (`astro add node`, and so on) over hand-rolled adapters.
 - Do not add GitHub App or Vercel API calls until the product plan includes them.
 - Migrated sites clone this starter and overlay old CSS/JS in a separate repo. Do not copy grouplfb snapshot files into this starter.
+- When the user says a task is done, update `docs/frontend-migration.md` and `docs/progress.md`.
 
 ## Development
 
