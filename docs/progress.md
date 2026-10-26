@@ -16,8 +16,8 @@ This list **replaces** the old single site-migration task 6 (“generate the Ast
 | | |
 |---|---|
 | Current task | — |
-| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12b, 13, 14, 15, 16, 16b, 17 |
-| Next | 18 |
+| Completed | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12b, 13, 14, 15, 16, 16b, 17, 18 |
+| Next | 19 |
 
 Update this table when a task is finished.
 
@@ -238,6 +238,32 @@ Some PDFs are nav items (custom URLs today). Figure out how editors attach a fil
 - Favicon in Payload — no CMS field. Migrated sites still use the overlay `<link rel="icon">` (grouplfb: `/lib/images/favicons/emea.ico`). Add a tenant/media field later.
 
 ## Changelog
+
+### 2026-10-26 — frontend task 18 (same-origin files audit)
+
+- Regenerated grouplfb snapshot artifacts (`pnpm snapshot`, `pnpm segment`, `pnpm seed`). No Payload re-import.
+- `payload-scrapper`: `pnpm audit:files` → `src/audit-files.ts` compares crawl `redirects[]` kind `file`, mirrored `www/` document/video paths (`isFileUrl`), and file `a[href]` from `outlines/chrome.json`, snapshot page HTML, and mapped `site.json` custom links. Report: `out/grouplfb/qa/files-audit.json`.
+- **Mirrored (14)** — every same-origin file href on the 8 English pages is on disk under `www/` and listed in `redirects[]` kind `file`:
+  - `dA/1ab802854c/Ecodesign_Fancoils-1802_English.pdf`
+  - `dA/264489f468/Ecodesign_VentilationUnits-1701_English.pdf`
+  - `dA/277bee2695/EcoDesign_Unitary-1802_English.pdf`
+  - `dA/4de6b84feb/EcoDesign_Rooftop-1802_English.pdf`
+  - `dA/7b9632e456/Eco_Design_Refri_1807-English.pdf`
+  - `dA/ae835f8256/EcoDesign_Chiller-1802_English.pdf`
+  - `dA/e1b630c696/fileAsset/LFB FRANCE_0094-PED-MAD-2024.pdf` (PED)
+  - `en/lib/documents/nav/certificates/Signed_Attestation_LFBGroup.pdf`
+  - `LFBCommitmentsEnglish2026.pdf`
+  - `lib/documents/certifications/ISO/New/iso_9001_other.pdf`
+  - `lib/documents/certifications/ISO/New/iso_14001_other.pdf`
+  - `lib/documents/certifications/ISO/New/Certificat ISO 9001-14001-45001 ENG AVRIL 2026-MARS 2029.pdf`
+  - `lib/documents/privacy-policy/PrivacyPolicyApril2025.pdf`
+  - `lib/documents/Privacy Policy - April 2025.pdf` (second legal footer path; both files mirrored)
+- **URL-only (0)** — no `redirects[]` kind `file` (or seeded custom file URL) without a matching `www/` file on this crawl.
+- **Missed (0)** — no same-origin file link in chrome/nav/page/mapped JSON that is absent from both `redirects[]` and `www/`.
+- **PED** — in `redirects[]` kind `file`; mirrored at `www/dA/e1b630c696/fileAsset/LFB FRANCE_0094-PED-MAD-2024.pdf`; nav still seeds `https://www.grouplfb.com/dA/e1b630c696/fileAsset/LFB%20FRANCE_0094-PED-MAD-2024.pdf` as a custom URL (tasks 19–20).
+- Nav/footer/cert/sustainability PDFs in mapped JSON still use live `https://www.grouplfb.com/…` custom URLs; EcoDesign product PDFs are only in page HTML + redirects (not nav). Import still does not upload PDFs to Payload media (task 19).
+- Known pipeline gaps (unchanged): `resources.ts` skips `video[src]` / `source[src]`; extensionless download URLs are not `kind: file`; redirect rows alone do not trigger download (grouplfb PDFs were fetched because the same URLs appear in HTML/resources).
+- Next: start task **19** (import same-origin files as Payload media).
 
 ### 2026-10-23 — frontend task 17
 
