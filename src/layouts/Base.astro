@@ -10,6 +10,8 @@ interface Props {
   footer: PublicFooter;
   pages: PublicPage[];
   origin: string;
+  /** Passed by the catch-all; overlay layouts use it for homepage-only chrome. */
+  isHomepage?: boolean;
 }
 
 const { title, nav, footer, pages, origin } = Astro.props;

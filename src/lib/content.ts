@@ -106,45 +106,166 @@ function escapeHtml(text: string): string {
     .replace(/"/g, '&quot;');
 }
 
-export function lexicalToHtml(value: unknown): string {
-  if (!value || typeof value !== 'object') {
-    return '';
-  }
+/** Trimmed string, or undefined when empty or not a string. */
+export function textField(
+  value: string | null | undefined,
+): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  return trimmed || undefined;
+}
 
+type LexicalNode = {
+  type?: string;
+  tag?: string;
+  listType?: string;
+  text?: unknown;
+  format?: unknown;
+  fields?: {
+    linkType?: string;
+    url?: string | null;
+    newTab?: boolean | null;
+    doc?: LinkPayload['reference'];
+  } | null;
+  children?: unknown[];
+};
+
+function lexicalRootChildren(value: unknown): LexicalNode[] {
+  if (!value || typeof value !== 'object') {
+    return [];
+  }
   const root = (value as { root?: { children?: unknown[] } }).root;
   if (!root || !Array.isArray(root.children)) {
+    return [];
+  }
+  return root.children.filter(
+    (node): node is LexicalNode => !!node && typeof node === 'object',
+  );
+}
+
+function plainText(node: LexicalNode): string {
+  if (node.type === 'text' && typeof node.text === 'string') {
+    return node.text;
+  }
+  if (node.type === 'linebreak') {
+    return '\n';
+  }
+  if (!Array.isArray(node.children)) {
     return '';
   }
+  return node.children
+    .filter((child): child is LexicalNode => !!child && typeof child === 'object')
+    .map(plainText)
+    .join('');
+}
 
-  const parts: string[] = [];
+/** Plain text of each top-level paragraph, trimmed; empty paragraphs are dropped. */
+export function lexicalParagraphs(value: unknown): string[] {
+  return lexicalRootChildren(value)
+    .filter((node) => node.type === 'paragraph')
+    .map((node) => plainText(node).trim())
+    .filter(Boolean);
+}
 
-  for (const node of root.children) {
-    if (!node || typeof node !== 'object') {
-      continue;
-    }
+// Lexical text format bit flags.
+const FORMAT_TAGS: Array<[number, string]> = [
+  [1, 'strong'],
+  [2, 'em'],
+  [4, 's'],
+  [8, 'u'],
+  [16, 'code'],
+  [32, 'sub'],
+  [64, 'sup'],
+];
 
-    const n = node as { type?: string; children?: unknown[] };
-    if (n.type !== 'paragraph' || !Array.isArray(n.children)) {
-      continue;
-    }
+const HEADING_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
 
-    let text = '';
-    for (const child of n.children) {
-      if (!child || typeof child !== 'object') {
-        continue;
-      }
-      const c = child as { type?: string; text?: unknown };
-      if (c.type === 'text' && typeof c.text === 'string') {
-        text += c.text;
-      }
-    }
-
-    if (text) {
-      parts.push(`<p>${escapeHtml(text)}</p>`);
-    }
+function lexicalLinkHref(
+  node: LexicalNode,
+  pages: PublicPage[],
+): string | undefined {
+  const fields = node.fields;
+  if (!fields) {
+    return undefined;
   }
+  if (fields.linkType === 'internal') {
+    return hrefFromLink({ type: 'reference', reference: fields.doc }, pages);
+  }
+  return hrefFromLink({ type: 'custom', url: fields.url }, pages);
+}
 
-  return parts.join('');
+function renderChildren(node: LexicalNode, pages: PublicPage[]): string {
+  if (!Array.isArray(node.children)) {
+    return '';
+  }
+  return node.children
+    .filter((child): child is LexicalNode => !!child && typeof child === 'object')
+    .map((child) => renderNode(child, pages))
+    .join('');
+}
+
+function renderNode(node: LexicalNode, pages: PublicPage[]): string {
+  switch (node.type) {
+    case 'text': {
+      if (typeof node.text !== 'string' || !node.text) return '';
+      const format = typeof node.format === 'number' ? node.format : 0;
+      let html = escapeHtml(node.text);
+      for (const [flag, tag] of FORMAT_TAGS) {
+        if (format & flag) html = `<${tag}>${html}</${tag}>`;
+      }
+      return html;
+    }
+    case 'linebreak':
+      return '<br>';
+    case 'tab':
+      return '\t';
+    case 'paragraph': {
+      const inner = renderChildren(node, pages);
+      return inner ? `<p>${inner}</p>` : '';
+    }
+    case 'heading': {
+      const tag = node.tag && HEADING_TAGS.has(node.tag) ? node.tag : 'h2';
+      const inner = renderChildren(node, pages);
+      return inner ? `<${tag}>${inner}</${tag}>` : '';
+    }
+    case 'quote': {
+      const inner = renderChildren(node, pages);
+      return inner ? `<blockquote>${inner}</blockquote>` : '';
+    }
+    case 'list': {
+      const tag = node.listType === 'number' || node.tag === 'ol' ? 'ol' : 'ul';
+      return `<${tag}>${renderChildren(node, pages)}</${tag}>`;
+    }
+    case 'listitem':
+      return `<li>${renderChildren(node, pages)}</li>`;
+    case 'link':
+    case 'autolink': {
+      const inner = renderChildren(node, pages);
+      const href = lexicalLinkHref(node, pages);
+      if (!href) return inner;
+      const target = node.fields?.newTab
+        ? ' target="_blank" rel="noopener noreferrer"'
+        : '';
+      return `<a href="${escapeHtml(href)}"${target}>${inner}</a>`;
+    }
+    default:
+      return renderChildren(node, pages);
+  }
+}
+
+/**
+ * Lexical rich text → HTML: paragraphs, headings, quotes, lists, links,
+ * bold / italic / underline / strikethrough / code, line breaks.
+ * Pass `pages` so internal links resolve to page paths.
+ */
+export function lexicalToHtml(
+  value: unknown,
+  options: { pages?: PublicPage[] } = {},
+): string {
+  const pages = options.pages ?? [];
+  return lexicalRootChildren(value)
+    .map((node) => renderNode(node, pages))
+    .join('');
 }
 
 export type HeroShape = {

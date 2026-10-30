@@ -18,8 +18,16 @@ const list = blocks ?? [];
     if (!blockType) {
       return null;
     }
-    const customVariant =
+    let customVariant =
       'customVariant' in block ? block.customVariant : undefined;
+    if (
+      blockType === 'html' &&
+      !customVariant &&
+      'label' in block &&
+      typeof block.label === 'string'
+    ) {
+      customVariant = block.label;
+    }
     const Component = pickTemplate(blockType, customVariant);
     if (!Component) {
       return null;

@@ -68,8 +68,9 @@ if (data.pages.length === 0) {
   footer={data.footer}
   pages={data.pages}
   origin={PAYLOAD_URL}
+  isHomepage={page?.isHomepage === true}
 >
-  <h1>{heading}</h1>
+  {!page && <h1>{heading}</h1>}
   {
     page && (
       <>
