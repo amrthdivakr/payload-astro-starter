@@ -16,6 +16,18 @@ Copy `.env.example` to `.env` and set `PAYLOAD_URL` (local Payload, default `htt
 
 > Official Astro template readme follows.
 
+## Clones and upstream
+
+Clones made by `pnpm astro` (payload-scrapper) keep this repo as their `upstream` remote. Shared code changes here, and clones pick it up with:
+
+```sh
+git fetch upstream && git merge upstream/main
+```
+
+- **Shared (do not edit in a clone):** `src/lib/`, `src/pages/`, `src/blocks/RenderBlocks.astro`, `html.astro`, `form.astro`, `blocks/*/default.astro`, `src/components/Hero.astro`, `PreviewBar.astro`, `package.json`.
+- **Clone-owned:** `src/layouts/Base.astro`, `src/components/Header.astro`, `Footer.astro`, site templates under `src/blocks/<type>/`, `public/`, docs. `.gitattributes` marks the clone-owned files that also exist here as `merge=ours`. This needs `git config merge.ours.driver true` in the clone (`pnpm astro` sets it).
+- Templates import their helpers from `src/lib/content.ts` (`textField`, `lexicalParagraphs`, `lexicalToHtml`, `hrefFromLink`, `mediaUrl`) instead of copying them.
+
 ## 🚀 Project Structure
 
 Inside of your Astro project, you'll see the following folders and files:
