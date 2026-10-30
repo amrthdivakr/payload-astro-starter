@@ -1,0 +1,12 @@
+# Files this clone owns. On `git merge upstream/main` keep the clone's
+# version when both sides changed them. Needs the driver once per checkout:
+#   git config merge.ours.driver true
+# (pnpm astro in payload-scrapper sets it.)
+src/layouts/Base.astro merge=ours
+src/components/Header.astro merge=ours
+src/components/Footer.astro merge=ours
+.env.example merge=ours
+AGENTS.md merge=ours
+README.md merge=ours
+docs/** merge=ours
+.cursor/** merge=ours
