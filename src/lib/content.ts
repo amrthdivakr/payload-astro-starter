@@ -1,3 +1,4 @@
+import { PAYLOAD_URL } from 'astro:env/server';
 import type { PublicPage } from './payload';
 import { normalizePath } from './match';
 
@@ -9,6 +10,7 @@ type LinkPayload = {
     relationTo?: string;
     value?: number | { id?: number; path?: string };
   } | null;
+  file?: number | { url?: string | null } | null;
   label?: string | null;
 };
 
@@ -49,6 +51,10 @@ export function hrefFromLink(
   if (l.type === 'custom') {
     const url = l.url?.trim();
     return url || undefined;
+  }
+
+  if (l.type === 'file') {
+    return typeof l.file === 'object' ? mediaUrl(l.file, PAYLOAD_URL) : undefined;
   }
 
   if (l.type === 'reference') {

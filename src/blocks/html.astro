@@ -7,11 +7,15 @@ interface Props {
   origin: string;
 }
 
-const { block } = Astro.props;
+const { block, origin } = Astro.props;
 
+// Imported file links are root-relative media URLs; serve them from Payload.
+const payloadOrigin = origin.replace(/\/+$/, '');
 const html =
   typeof block.html === 'string' && block.html.trim()
-    ? block.html.trim()
+    ? block.html
+        .trim()
+        .replace(/\b(href|src)=(["'])\/api\/media\//gi, `$1=$2${payloadOrigin}/api/media/`)
     : undefined;
 ---
 
