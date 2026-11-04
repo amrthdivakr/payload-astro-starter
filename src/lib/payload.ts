@@ -32,7 +32,7 @@ export type PublicSectionChrome = {
 };
 
 export type PublicHero = PublicSectionChrome & {
-  type?: string | null;
+  hide?: boolean | null;
 };
 
 export type PublicSectionBlock = PublicSectionChrome & {

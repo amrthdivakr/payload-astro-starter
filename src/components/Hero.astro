@@ -10,7 +10,7 @@ interface Props {
 
 const { hero, pages, origin } = Astro.props;
 
-const showHero = Boolean(hero && hero.type !== 'none');
+const showHero = Boolean(hero && !hero.hide);
 const Component = showHero ? pickTemplate('hero', hero?.customVariant) : undefined;
 ---
 
