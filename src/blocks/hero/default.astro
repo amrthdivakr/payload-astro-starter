@@ -1,5 +1,6 @@
 ---
 import type { PublicHero, PublicLinkRow } from '../../lib/payload';
+import ItemRows from '../../components/ItemRows.astro';
 import {
   hrefFromLink,
   lexicalToHtml,
@@ -77,4 +78,5 @@ const links = linkRows(hero.links);
       )}
     </p>
   )}
+  <ItemRows items={hero.items} origin={origin} />
 </section>

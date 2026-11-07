@@ -35,6 +35,7 @@ export type PublicSectionChrome = {
 
 export type PublicHero = PublicSectionChrome & {
   hide?: boolean | null;
+  items?: PublicItemsRow[] | null;
 };
 
 export type PublicSectionBlock = PublicSectionChrome & {
@@ -46,7 +47,7 @@ export type PublicItemsRow = {
   eyebrow?: string | null;
   title?: string | null;
   subtitle?: string | null;
-  text?: string | null;
+  text?: PublicLexicalContent | null;
   media?: PublicMediaRef | number | null;
   enableLink?: boolean | null;
   link?: PublicLink | null;

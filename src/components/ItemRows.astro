@@ -1,0 +1,80 @@
+---
+// Item rows shared by the Items block and the hero: eyebrow, title, subtitle, rich text, image, link.
+import type { PublicItemsRow } from '../lib/payload';
+import {
+  hrefFromLink,
+  lexicalToHtml,
+  linkLabel,
+  linkOpensNewTab,
+  mediaUrl,
+  textField,
+} from '../lib/content';
+
+interface Props {
+  items?: PublicItemsRow[] | null;
+  origin: string;
+}
+
+const { items, origin } = Astro.props;
+const { prefix } = Astro.locals;
+
+const rows =
+  items
+    ?.map((item) => {
+      const rowEyebrow = textField(item.eyebrow);
+      const title = textField(item.title);
+      const subtitle = textField(item.subtitle);
+      const textHtml = lexicalToHtml(item.text, prefix);
+      let image: { src: string; alt: string } | undefined;
+      if (item.media && typeof item.media === 'object') {
+        const src = mediaUrl(item.media, origin);
+        if (src) {
+          const alt =
+            typeof item.media.alt === 'string' && item.media.alt.trim()
+              ? item.media.alt.trim()
+              : '';
+          image = { src, alt };
+        }
+      }
+      let itemLink: { label: string; href: string; newTab: boolean } | undefined;
+      if (item.enableLink && item.link) {
+        const label = linkLabel(item.link);
+        const href = hrefFromLink(item.link, prefix);
+        if (label && href) {
+          itemLink = { label, href, newTab: linkOpensNewTab(item.link) };
+        }
+      }
+      if (!rowEyebrow && !title && !subtitle && !textHtml && !image && !itemLink) {
+        return null;
+      }
+      return { rowEyebrow, title, subtitle, textHtml, image, itemLink };
+    })
+    .filter(Boolean) ?? [];
+---
+
+{rows.length > 0 && (
+  <ul>
+    {rows.map((row) =>
+      row ? (
+        <li>
+          {row.rowEyebrow && <p>{row.rowEyebrow}</p>}
+          {row.title && <h3>{row.title}</h3>}
+          {row.subtitle && <p>{row.subtitle}</p>}
+          {row.textHtml && <div set:html={row.textHtml} />}
+          {row.image && <img src={row.image.src} alt={row.image.alt} />}
+          {row.itemLink && (
+            <p>
+              <a
+                href={row.itemLink.href}
+                target={row.itemLink.newTab ? '_blank' : undefined}
+                rel={row.itemLink.newTab ? 'noreferrer' : undefined}
+              >
+                {row.itemLink.label}
+              </a>
+            </p>
+          )}
+        </li>
+      ) : null,
+    )}
+  </ul>
+)}
