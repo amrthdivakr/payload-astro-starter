@@ -5,6 +5,7 @@
 src/layouts/Base.astro merge=ours
 src/components/Header.astro merge=ours
 src/components/Footer.astro merge=ours
+src/components/PostMeta.astro merge=ours
 .env.example merge=ours
 AGENTS.md merge=ours
 README.md merge=ours

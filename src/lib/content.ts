@@ -288,6 +288,43 @@ export function linkLabel(link: unknown): string | undefined {
   return undefined;
 }
 
+/** `2026-11-06T…` → "6 November 2026" in `locale`; undefined when missing or invalid. */
+export function formatDate(
+  value: string | null | undefined,
+  locale: string,
+): string | undefined {
+  if (!value) return undefined;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return undefined;
+  return new Intl.DateTimeFormat(locale, { dateStyle: 'long' }).format(date);
+}
+
+/** ISO 3166-1 alpha-2 code → country name in `locale` ("FR" → "France" / "France"). */
+export function countryName(
+  code: string | null | undefined,
+  locale: string,
+): string | undefined {
+  if (!code) return undefined;
+  try {
+    return new Intl.DisplayNames([locale], { type: 'region' }).of(code) ?? code;
+  } catch {
+    return code;
+  }
+}
+
+/** Titles of populated categories (slug when a title is missing); bare ids are skipped. */
+export function categoryTitles(
+  categories: Array<{ title?: string | null; slug?: string | null } | number> | null | undefined,
+): string[] {
+  return (categories ?? [])
+    .map((category) =>
+      typeof category === 'object'
+        ? textField(category.title) ?? textField(category.slug)
+        : undefined,
+    )
+    .filter((title): title is string => Boolean(title));
+}
+
 export function linkOpensNewTab(link: unknown): boolean {
   const raw = unwrapLink(link);
   if (!raw || typeof raw !== 'object') return false;

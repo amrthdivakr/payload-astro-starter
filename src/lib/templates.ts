@@ -1,4 +1,5 @@
-import type { AstroComponentFactory } from 'astro';
+// Astro 7 no longer exports this type from `astro`.
+import type { AstroComponentFactory } from 'astro/runtime/server/index.js';
 
 type GlobModule = { default: AstroComponentFactory };
 
@@ -56,7 +57,12 @@ export function pickTemplate(
     return resolveFromCandidates(keys);
   }
 
-  if (blockType === 'hero' || blockType === 'section' || blockType === 'items') {
+  if (
+    blockType === 'hero' ||
+    blockType === 'section' ||
+    blockType === 'items' ||
+    blockType === 'listing'
+  ) {
     const keys: string[] = [];
     if (variant) {
       keys.push(`../blocks/${blockType}/${variant}.astro`);

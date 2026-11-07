@@ -73,11 +73,22 @@ export type PublicFormBlock = {
   id?: string | null;
 };
 
+/** Lists the posts whose parent is the page holding it (cards come from `getPostsListing`). */
+export type PublicListingBlock = {
+  blockType: 'listing';
+  heading?: string | null;
+  intro?: string | null;
+  limit?: number | null;
+  id?: string | null;
+  customVariant?: string | null;
+};
+
 export type PublicLayoutBlock =
   | PublicSectionBlock
   | PublicItemsBlock
   | PublicHtmlBlock
   | PublicFormBlock
+  | PublicListingBlock
   | { blockType?: string; customVariant?: string | null; id?: string | null };
 
 export type PublicPage = {
@@ -117,6 +128,70 @@ export type PublicMediaRef = {
   id?: number;
   url?: string | null;
   alt?: string | null;
+  width?: number | null;
+  height?: number | null;
+};
+
+export type PublicCategoryRef = {
+  id: number;
+  title?: string | null;
+  slug?: string | null;
+};
+
+/** A post from `/doc` (depth 1). `country` is an ISO 3166-1 alpha-2 code. */
+export type PublicPost = {
+  id: number;
+  title: string | null;
+  slug: string;
+  path: string;
+  parent?: PublicDocRef | number | null;
+  kind?: { id: number; title?: string | null; slug?: string | null } | number | null;
+  summary?: string | null;
+  image?: PublicMediaRef | number | null;
+  publishedAt?: string | null;
+  categories?: Array<PublicCategoryRef | number> | null;
+  country?: string | null;
+  hero?: PublicHero | null;
+  layout?: PublicLayoutBlock[] | null;
+  meta?: Record<string, unknown>;
+};
+
+/** One card from the posts listing endpoint. */
+export type PublicPostCard = {
+  id: number;
+  title: string | null;
+  path: string;
+  summary?: string | null;
+  image?: PublicMediaRef | number | null;
+  publishedAt?: string | null;
+  country?: string | null;
+  categories?: Array<PublicCategoryRef | number> | null;
+};
+
+export type PublicPostsListing = {
+  locale: string;
+  docs: PublicPostCard[];
+  totalDocs: number;
+  limit: number;
+  page: number;
+  totalPages: number;
+  hasPrevPage: boolean;
+  hasNextPage: boolean;
+  prevPage: number | null;
+  nextPage: number | null;
+  filters: {
+    categories: Array<{ slug: string; title: string }>;
+    countries: Array<{ code: string; label: string }>;
+  };
+};
+
+export type PostsListingQuery = {
+  /** Id of the listing page: its posts are the ones listed. */
+  parent: number;
+  page?: number;
+  limit?: number;
+  category?: string;
+  country?: string;
 };
 
 export type PublicLink = {
@@ -186,7 +261,13 @@ export type PublicDocResponse =
       doc: PublicPage;
     }
   | {
-      collection: Exclude<PublicDocCollection, 'pages'>;
+      collection: 'posts';
+      locale: string;
+      availableLocales: string[];
+      doc: PublicPost;
+    }
+  | {
+      collection: Exclude<PublicDocCollection, 'pages' | 'posts'>;
       locale: string;
       availableLocales: string[];
       doc: PublicDocRef & { title: string | null; path: string };
@@ -303,4 +384,27 @@ export async function getPublicDoc(
     throw await failure(response);
   }
   return (await response.json()) as PublicDocResponse;
+}
+
+/**
+ * One page of post cards for a listing block, plus its filter buttons.
+ * Published posts only: the endpoint ignores drafts, so no draft options are sent.
+ */
+export async function getPostsListing(
+  query: PostsListingQuery,
+  options?: Pick<PublicFetchOptions, 'locale'>,
+): Promise<PublicPostsListing> {
+  const params = new URLSearchParams({ parent: String(query.parent) });
+  if (query.page && query.page > 1) params.set('page', String(query.page));
+  if (query.limit) params.set('limit', String(query.limit));
+  if (query.category) params.set('category', query.category);
+  if (query.country) params.set('country', query.country);
+
+  const response = await fetchPublic('/posts', params, {
+    locale: options?.locale,
+  });
+  if (!response.ok) {
+    throw await failure(response);
+  }
+  return (await response.json()) as PublicPostsListing;
 }

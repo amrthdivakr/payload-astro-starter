@@ -1,0 +1,57 @@
+---
+import type { PublicPost } from '../lib/payload';
+import { categoryTitles, countryName, formatDate, textField } from '../lib/content';
+import { normalizePath } from '../lib/match';
+import { withPrefix } from '../lib/locale';
+
+interface Props {
+  post: PublicPost;
+  /** The site's default locale: the parent's title (from its route) is only in that locale. */
+  defaultLocale: string;
+}
+
+/** Date, categories, country and a link back to the listing, under a post's hero. */
+
+const { post, defaultLocale } = Astro.props;
+const { locale, prefix } = Astro.locals;
+
+const date = formatDate(post.publishedAt, locale);
+const categories = categoryTitles(post.categories);
+const country = countryName(post.country, locale);
+
+const parent =
+  post.parent && typeof post.parent === 'object' && post.parent.path
+    ? {
+        href: withPrefix(normalizePath(post.parent.path), prefix),
+        title:
+          locale === defaultLocale ? textField(post.parent.title) : undefined,
+      }
+    : undefined;
+
+const hasMeta = Boolean(date || categories.length || country || parent);
+---
+
+{
+  hasMeta && (
+    <aside class="post-meta">
+      {parent && (
+        <p>
+          {parent.title ? (
+            <a href={parent.href}>← {parent.title}</a>
+          ) : (
+            <a href={parent.href} aria-label="Back">←</a>
+          )}
+        </p>
+      )}
+      {date && <time datetime={post.publishedAt ?? undefined}>{date}</time>}
+      {categories.length > 0 && (
+        <ul aria-label="Categories">
+          {categories.map((title) => (
+            <li>{title}</li>
+          ))}
+        </ul>
+      )}
+      {country && <p>{country}</p>}
+    </aside>
+  )
+}

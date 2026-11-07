@@ -1,0 +1,198 @@
+---
+import type { PublicListingBlock } from '../../lib/payload';
+import { getPostsListing } from '../../lib/payload';
+import {
+  categoryTitles,
+  countryName,
+  formatDate,
+  mediaUrl,
+  textField,
+} from '../../lib/content';
+import { withPrefix } from '../../lib/locale';
+
+interface Props {
+  block: PublicListingBlock;
+  origin: string;
+}
+
+/**
+ * Lists the posts under the page holding this block (posts task 7).
+ * `?page=`, `?category=` and `?country=` come from the URL; Payload returns one
+ * page of cards. Filters and page links are plain links, rendered on the server.
+ */
+
+const { block, origin } = Astro.props;
+const { locale, prefix, docId } = Astro.locals;
+
+const heading = textField(block.heading);
+const intro = textField(block.intro);
+
+const params = Astro.url.searchParams;
+const pageParam = params.get('page');
+const page =
+  pageParam && /^\d+$/.test(pageParam) && Number(pageParam) > 0
+    ? Number(pageParam)
+    : 1;
+const category = textField(params.get('category'));
+const country = textField(params.get('country'))?.toUpperCase();
+
+const listing =
+  docId != null
+    ? await getPostsListing(
+        {
+          parent: docId,
+          page,
+          limit: block.limit ?? undefined,
+          category,
+          country,
+        },
+        { locale },
+      )
+    : undefined;
+
+type Query = { category?: string; country?: string; page?: number };
+
+/** Link to this page with the given filters; page 1 has no `?page=`. */
+function hrefFor(query: Query): string {
+  const search = new URLSearchParams();
+  if (query.category) search.set('category', query.category);
+  if (query.country) search.set('country', query.country);
+  if (query.page && query.page > 1) search.set('page', String(query.page));
+  const qs = search.toString();
+  return `${Astro.url.pathname}${qs ? `?${qs}` : ''}`;
+}
+
+const categoryFilters = listing
+  ? [
+      { label: 'All categories', value: undefined as string | undefined },
+      ...listing.filters.categories.map((c) => ({ label: c.title, value: c.slug })),
+    ].map((f) => ({
+      ...f,
+      href: hrefFor({ category: f.value, country }),
+      current: f.value === category,
+    }))
+  : [];
+
+const countryFilters = listing
+  ? [
+      { label: 'All countries', value: undefined as string | undefined },
+      ...listing.filters.countries.map((c) => ({
+        label: countryName(c.code, locale) ?? c.label,
+        value: c.code,
+      })),
+    ].map((f) => ({
+      ...f,
+      href: hrefFor({ category, country: f.value }),
+      current: f.value === country,
+    }))
+  : [];
+
+const cards =
+  listing?.docs.map((post) => {
+    const image =
+      post.image && typeof post.image === 'object'
+        ? {
+            src: mediaUrl(post.image, origin),
+            alt: textField(post.image.alt) ?? '',
+            width: post.image.width ?? undefined,
+            height: post.image.height ?? undefined,
+          }
+        : undefined;
+    return {
+      id: post.id,
+      title: textField(post.title) ?? post.path,
+      href: withPrefix(post.path, prefix),
+      summary: textField(post.summary),
+      date: formatDate(post.publishedAt, locale),
+      dateTime: post.publishedAt ?? undefined,
+      tags: [
+        ...categoryTitles(post.categories),
+        countryName(post.country, locale),
+      ].filter(Boolean),
+      image: image?.src ? image : undefined,
+    };
+  }) ?? [];
+
+const totalPages = listing?.totalPages ?? 0;
+const prevHref =
+  listing && page > 1
+    ? hrefFor({ category, country, page: Math.min(page - 1, Math.max(totalPages, 1)) })
+    : undefined;
+const nextHref =
+  listing?.hasNextPage ? hrefFor({ category, country, page: page + 1 }) : undefined;
+---
+
+<section class="listing">
+  {heading && <h2>{heading}</h2>}
+  {intro && <p>{intro}</p>}
+  {
+    listing && (categoryFilters.length > 1 || countryFilters.length > 1) && (
+      <nav aria-label="Filters">
+        {categoryFilters.length > 1 && (
+          <ul>
+            {categoryFilters.map((f) => (
+              <li>
+                <a href={f.href} aria-current={f.current ? 'true' : undefined}>
+                  {f.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
+        {countryFilters.length > 1 && (
+          <ul>
+            {countryFilters.map((f) => (
+              <li>
+                <a href={f.href} aria-current={f.current ? 'true' : undefined}>
+                  {f.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </nav>
+    )
+  }
+  {
+    cards.length > 0 ? (
+      <ul>
+        {cards.map((card) => (
+          <li>
+            <article>
+              {card.image && (
+                <img
+                  src={card.image.src}
+                  alt={card.image.alt}
+                  width={card.image.width}
+                  height={card.image.height}
+                  loading="lazy"
+                />
+              )}
+              <h3>
+                <a href={card.href}>{card.title}</a>
+              </h3>
+              {card.date && <time datetime={card.dateTime}>{card.date}</time>}
+              {card.tags.length > 0 && <p>{card.tags.join(' · ')}</p>}
+              {card.summary && <p>{card.summary}</p>}
+            </article>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p>No posts.</p>
+    )
+  }
+  {
+    (totalPages > 1 || page > 1) && (
+      <nav aria-label="Pages">
+        {prevHref && <a href={prevHref} rel="prev">Previous</a>}
+        {page <= totalPages && (
+          <span>
+            Page {page} of {totalPages}
+          </span>
+        )}
+        {nextHref && <a href={nextHref} rel="next">Next</a>}
+      </nav>
+    )
+  }
+</section>

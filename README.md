@@ -25,9 +25,10 @@ git fetch upstream && git merge upstream/main
 ```
 
 - **Shared (do not edit in a clone):** `src/lib/`, `src/pages/`, `src/blocks/RenderBlocks.astro`, `html.astro`, `form.astro`, `blocks/*/default.astro`, `src/components/Hero.astro`, `PreviewBar.astro`, `package.json`.
-- **Clone-owned:** `src/layouts/Base.astro`, `src/components/Header.astro`, `Footer.astro`, site templates under `src/blocks/<type>/`, `public/`, docs. `.gitattributes` marks the clone-owned files that also exist here as `merge=ours`. This needs `git config merge.ours.driver true` in the clone (`pnpm astro` sets it).
+- **Clone-owned:** `src/layouts/Base.astro`, `src/components/Header.astro`, `Footer.astro`, `PostMeta.astro`, site templates under `src/blocks/<type>/`, `public/`, docs. `.gitattributes` marks the clone-owned files that also exist here as `merge=ours`. This needs `git config merge.ours.driver true` in the clone (`pnpm astro` sets it).
 - Templates import their helpers from `src/lib/content.ts` (`textField`, `lexicalParagraphs`, `lexicalToHtml`, `hrefFromLink`, `mediaUrl`) instead of copying them.
 - **Locales:** a site with several locales has `/{locale}` in front of every path (the rule is in `src/lib/locale.ts`); a one-locale site has none. The catch-all sets `Astro.locals.locale` and `Astro.locals.prefix`. Templates pass `Astro.locals.prefix` to `hrefFromLink(link, prefix)` and `lexicalToHtml(value, prefix)`, and use `withPrefix('/', prefix)` for the home link. `Base.astro` takes `lang` and `alternates` (`hreflang`).
+- **Posts:** the catch-all renders a post like a page (hero, `PostMeta`, blocks) and sets `Astro.locals.docId`. The `listing` block (`src/blocks/listing/default.astro`) lists the posts under the page holding it through `getPostsListing`, reading `?page=`, `?category=` and `?country=`. The block has no `customVariant` field yet, so a per-site listing template needs that field added in Payload first. `formatDate`, `countryName` and `categoryTitles` in `content.ts` format card and post fields in the current locale. Listings show published posts only, also in preview.
 
 ## 🚀 Project Structure
 

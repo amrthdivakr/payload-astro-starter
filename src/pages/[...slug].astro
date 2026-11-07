@@ -16,6 +16,7 @@ import {
 import Base from '../layouts/Base.astro';
 import Hero from '../components/Hero.astro';
 import RenderBlocks from '../blocks/RenderBlocks.astro';
+import PostMeta from '../components/PostMeta.astro';
 
 const previewActive = Astro.cookies.get('payload-preview')?.value === '1';
 const previewToken = Astro.cookies.get('payload-token')?.value ?? '';
@@ -63,6 +64,7 @@ const [data, found] = await Promise.all([
 const prefix = localePrefix(route.locale, data.site);
 Astro.locals.locale = route.locale;
 Astro.locals.prefix = prefix;
+Astro.locals.docId = found?.doc.id;
 
 if (!found) {
   const redirect = findRedirectByFrom(data.redirects, route.path);
@@ -104,6 +106,7 @@ const alternates =
     : [];
 
 const page = found?.collection === 'pages' ? found.doc : undefined;
+const post = found?.collection === 'posts' ? found.doc : undefined;
 const docTitle = found?.doc.title ?? undefined;
 
 const title = found
@@ -128,7 +131,16 @@ const title = found
       </>
     )
   }
-  {found && !page && <h1>{docTitle}</h1>}
+  {
+    post && (
+      <>
+        <Hero hero={post.hero} origin={PAYLOAD_URL} />
+        <PostMeta post={post} defaultLocale={data.site.defaultLocale} />
+        <RenderBlocks blocks={post.layout} origin={PAYLOAD_URL} />
+      </>
+    )
+  }
+  {found && !page && !post && <h1>{docTitle}</h1>}
   {
     !found && (
       <>
