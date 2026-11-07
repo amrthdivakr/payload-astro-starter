@@ -1,5 +1,4 @@
 import { PAYLOAD_URL } from 'astro:env/server';
-import type { PublicPage } from './payload';
 import { normalizePath } from './match';
 
 type LinkPayload = {
@@ -24,24 +23,17 @@ function unwrapLink(link: unknown): unknown {
   return link;
 }
 
+/** Path of a populated reference. A bare id means Payload didn't populate it: no link. */
 function resolveReferencePath(
-  value: number | { path?: string },
-  pages: PublicPage[],
+  value: number | { path?: string | null },
 ): string | undefined {
   if (typeof value === 'number') {
-    const page = pages.find((p) => p.id === value);
-    return page ? normalizePath(page.path) : undefined;
+    return undefined;
   }
-  if (value.path) {
-    return normalizePath(value.path);
-  }
-  return undefined;
+  return value.path ? normalizePath(value.path) : undefined;
 }
 
-export function hrefFromLink(
-  link: unknown,
-  pages: PublicPage[],
-): string | undefined {
+export function hrefFromLink(link: unknown): string | undefined {
   const raw = unwrapLink(link);
   if (!raw || typeof raw !== 'object') {
     return undefined;
@@ -62,7 +54,7 @@ export function hrefFromLink(
     if (ref == null) {
       return undefined;
     }
-    return resolveReferencePath(ref, pages);
+    return resolveReferencePath(ref);
   }
 
   return undefined;
@@ -180,31 +172,28 @@ const FORMAT_TAGS: Array<[number, string]> = [
 
 const HEADING_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
 
-function lexicalLinkHref(
-  node: LexicalNode,
-  pages: PublicPage[],
-): string | undefined {
+function lexicalLinkHref(node: LexicalNode): string | undefined {
   const fields = node.fields;
   if (!fields) {
     return undefined;
   }
   if (fields.linkType === 'internal') {
-    return hrefFromLink({ type: 'reference', reference: fields.doc }, pages);
+    return hrefFromLink({ type: 'reference', reference: fields.doc });
   }
-  return hrefFromLink({ type: 'custom', url: fields.url }, pages);
+  return hrefFromLink({ type: 'custom', url: fields.url });
 }
 
-function renderChildren(node: LexicalNode, pages: PublicPage[]): string {
+function renderChildren(node: LexicalNode): string {
   if (!Array.isArray(node.children)) {
     return '';
   }
   return node.children
     .filter((child): child is LexicalNode => !!child && typeof child === 'object')
-    .map((child) => renderNode(child, pages))
+    .map((child) => renderNode(child))
     .join('');
 }
 
-function renderNode(node: LexicalNode, pages: PublicPage[]): string {
+function renderNode(node: LexicalNode): string {
   switch (node.type) {
     case 'text': {
       if (typeof node.text !== 'string' || !node.text) return '';
@@ -220,28 +209,28 @@ function renderNode(node: LexicalNode, pages: PublicPage[]): string {
     case 'tab':
       return '\t';
     case 'paragraph': {
-      const inner = renderChildren(node, pages);
+      const inner = renderChildren(node);
       return inner ? `<p>${inner}</p>` : '';
     }
     case 'heading': {
       const tag = node.tag && HEADING_TAGS.has(node.tag) ? node.tag : 'h2';
-      const inner = renderChildren(node, pages);
+      const inner = renderChildren(node);
       return inner ? `<${tag}>${inner}</${tag}>` : '';
     }
     case 'quote': {
-      const inner = renderChildren(node, pages);
+      const inner = renderChildren(node);
       return inner ? `<blockquote>${inner}</blockquote>` : '';
     }
     case 'list': {
       const tag = node.listType === 'number' || node.tag === 'ol' ? 'ol' : 'ul';
-      return `<${tag}>${renderChildren(node, pages)}</${tag}>`;
+      return `<${tag}>${renderChildren(node)}</${tag}>`;
     }
     case 'listitem':
-      return `<li>${renderChildren(node, pages)}</li>`;
+      return `<li>${renderChildren(node)}</li>`;
     case 'link':
     case 'autolink': {
-      const inner = renderChildren(node, pages);
-      const href = lexicalLinkHref(node, pages);
+      const inner = renderChildren(node);
+      const href = lexicalLinkHref(node);
       if (!href) return inner;
       const target = node.fields?.newTab
         ? ' target="_blank" rel="noopener noreferrer"'
@@ -249,22 +238,18 @@ function renderNode(node: LexicalNode, pages: PublicPage[]): string {
       return `<a href="${escapeHtml(href)}"${target}>${inner}</a>`;
     }
     default:
-      return renderChildren(node, pages);
+      return renderChildren(node);
   }
 }
 
 /**
  * Lexical rich text → HTML: paragraphs, headings, quotes, lists, links,
  * bold / italic / underline / strikethrough / code, line breaks.
- * Pass `pages` so internal links resolve to page paths.
+ * Internal links use the populated doc's `path`.
  */
-export function lexicalToHtml(
-  value: unknown,
-  options: { pages?: PublicPage[] } = {},
-): string {
-  const pages = options.pages ?? [];
+export function lexicalToHtml(value: unknown): string {
   return lexicalRootChildren(value)
-    .map((node) => renderNode(node, pages))
+    .map((node) => renderNode(node))
     .join('');
 }
 

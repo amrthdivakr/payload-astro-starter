@@ -1,5 +1,5 @@
 ---
-import type { PublicLinkRow, PublicPage, PublicSectionBlock } from '../../lib/payload';
+import type { PublicLinkRow, PublicSectionBlock } from '../../lib/payload';
 import {
   hrefFromLink,
   lexicalToHtml,
@@ -11,11 +11,10 @@ import {
 
 interface Props {
   block: PublicSectionBlock;
-  pages: PublicPage[];
   origin: string;
 }
 
-const { block, pages, origin } = Astro.props;
+const { block, origin } = Astro.props;
 
 function mediaImages(
   items: PublicSectionBlock['media'],
@@ -39,7 +38,7 @@ function linkRows(rows: PublicLinkRow[] | null | undefined) {
   return rows
     .map((row) => {
       const label = linkLabel(row);
-      const href = hrefFromLink(row, pages);
+      const href = hrefFromLink(row);
       if (!label || !href) return null;
       return { label, href, newTab: linkOpensNewTab(row) };
     })
@@ -49,7 +48,7 @@ function linkRows(rows: PublicLinkRow[] | null | undefined) {
 const eyebrow = textField(block.eyebrow);
 const heading = textField(block.heading);
 const subheading = textField(block.subheading);
-const contentHtml = lexicalToHtml(block.content, { pages });
+const contentHtml = lexicalToHtml(block.content);
 const images = mediaImages(block.media, block.backgroundMedia);
 const links = linkRows(block.links);
 ---

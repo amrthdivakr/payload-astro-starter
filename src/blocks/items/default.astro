@@ -1,5 +1,5 @@
 ---
-import type { PublicItemsBlock, PublicLinkRow, PublicPage } from '../../lib/payload';
+import type { PublicItemsBlock, PublicLinkRow } from '../../lib/payload';
 import {
   hrefFromLink,
   lexicalToHtml,
@@ -11,18 +11,17 @@ import {
 
 interface Props {
   block: PublicItemsBlock;
-  pages: PublicPage[];
   origin: string;
 }
 
-const { block, pages, origin } = Astro.props;
+const { block, origin } = Astro.props;
 
 function linkRows(rows: PublicLinkRow[] | null | undefined) {
   if (!rows?.length) return [];
   return rows
     .map((row) => {
       const label = linkLabel(row);
-      const href = hrefFromLink(row, pages);
+      const href = hrefFromLink(row);
       if (!label || !href) return null;
       return { label, href, newTab: linkOpensNewTab(row) };
     })
@@ -32,7 +31,7 @@ function linkRows(rows: PublicLinkRow[] | null | undefined) {
 const eyebrow = textField(block.eyebrow);
 const heading = textField(block.heading);
 const subheading = textField(block.subheading);
-const contentHtml = lexicalToHtml(block.content, { pages });
+const contentHtml = lexicalToHtml(block.content);
 const links = linkRows(block.links);
 
 const rows =
@@ -56,7 +55,7 @@ const rows =
       let itemLink: { label: string; href: string; newTab: boolean } | undefined;
       if (item.enableLink && item.link) {
         const label = linkLabel(item.link);
-        const href = hrefFromLink(item.link, pages);
+        const href = hrefFromLink(item.link);
         if (label && href) {
           itemLink = { label, href, newTab: linkOpensNewTab(item.link) };
         }

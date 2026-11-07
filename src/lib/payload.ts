@@ -4,6 +4,8 @@ export type PublicSite = {
   id: number;
   name: string;
   slug: string;
+  locales?: string[];
+  defaultLocale?: string;
   businessSummary?: string | null;
 };
 
@@ -90,11 +92,12 @@ export type PublicPage = {
   meta?: Record<string, unknown>;
 };
 
-export type PublicRedirectPageRef = {
+/** A populated reference to any routable doc (page, post, product, …). */
+export type PublicDocRef = {
   id: number;
-  title: string;
-  slug: string;
-  path: string;
+  title?: string | null;
+  slug?: string | null;
+  path?: string | null;
 };
 
 export type PublicRedirect = {
@@ -103,8 +106,8 @@ export type PublicRedirect = {
   to?: {
     type?: ('reference' | 'custom') | null;
     reference?: {
-      relationTo: 'pages';
-      value: number | PublicRedirectPageRef;
+      relationTo: string;
+      value: number | PublicDocRef;
     } | null;
     url?: string | null;
   };
@@ -123,7 +126,7 @@ export type PublicLink = {
   newTab?: boolean | null;
   reference?: {
     relationTo?: string;
-    value?: number | { id?: number; path?: string; title?: string; slug?: string };
+    value?: number | PublicDocRef;
   } | null;
 };
 
@@ -159,67 +162,139 @@ export type PublicFooter = {
   social?: PublicLinkRow[];
   certs?: Array<PublicMediaRef | number> | null;
 } | null;
-export type PublicMedia = Record<string, unknown>;
-
 export type PublicSiteResponse = {
   site: PublicSite;
-  pages: PublicPage[];
+  locale: string;
   nav: PublicNav;
   contact: PublicContact;
   footer: PublicFooter;
-  media: PublicMedia[];
   redirects: PublicRedirect[];
 };
+
+/** Collections `/doc` can return. Pages render here; the rest are templates elsewhere. */
+export type PublicDocCollection =
+  | 'pages'
+  | 'posts'
+  | 'products'
+  | 'product-categories';
+
+export type PublicDocResponse =
+  | {
+      collection: 'pages';
+      locale: string;
+      availableLocales: string[];
+      doc: PublicPage;
+    }
+  | {
+      collection: Exclude<PublicDocCollection, 'pages'>;
+      locale: string;
+      availableLocales: string[];
+      doc: PublicDocRef & { title: string | null; path: string };
+    };
 
 type PublicApiErrorBody = {
   error?: string;
 };
 
-export type GetPublicSiteOptions = {
+export type PublicFetchOptions = {
   draft?: boolean;
   token?: string;
 };
 
-export async function getPublicSite(
-  options?: GetPublicSiteOptions,
-): Promise<PublicSiteResponse> {
+function siteSlug(): string {
   const slug = SITE_SLUG.trim();
-
   if (!slug) {
     throw new Error(
       'SITE_SLUG is empty. Set SITE_SLUG in .env to a published tenant slug from Payload.',
     );
   }
+  return slug;
+}
 
+/**
+ * GET `/api/public/:slug<suffix>`. Adds `draft=true` and the JWT header only
+ * when both a draft flag and a token are given. Returns the raw response
+ * so callers can treat 404 themselves; throws on network errors.
+ */
+async function fetchPublic(
+  suffix: string,
+  params: URLSearchParams,
+  options?: PublicFetchOptions,
+): Promise<Response> {
   const useDraft =
     options?.draft === true &&
     typeof options.token === 'string' &&
     options.token.length > 0;
 
+  if (useDraft) {
+    params.set('draft', 'true');
+  }
+
   const origin = PAYLOAD_URL.replace(/\/+$/, '');
-  const url = useDraft
-    ? `${origin}/api/public/${encodeURIComponent(slug)}?draft=true`
-    : `${origin}/api/public/${encodeURIComponent(slug)}`;
+  const query = params.toString();
+  const url = `${origin}/api/public/${encodeURIComponent(siteSlug())}${suffix}${
+    query ? `?${query}` : ''
+  }`;
 
   const headers: HeadersInit = {};
   if (useDraft) {
     headers.Authorization = `JWT ${options!.token}`;
   }
 
-  const response = await fetch(url, { headers });
+  return fetch(url, { headers });
+}
 
-  if (!response.ok) {
-    let message = `Payload public API failed (${response.status})`;
-    try {
-      const body = (await response.json()) as PublicApiErrorBody;
-      if (typeof body.error === 'string' && body.error) {
-        message = `${message}: ${body.error}`;
-      }
-    } catch {
-      // ignore non-JSON error bodies
+async function failure(response: Response): Promise<Error> {
+  let message = `Payload public API failed (${response.status})`;
+  try {
+    const body = (await response.json()) as PublicApiErrorBody;
+    if (typeof body.error === 'string' && body.error) {
+      message = `${message}: ${body.error}`;
     }
-    throw new Error(message);
+  } catch {
+    // ignore non-JSON error bodies
   }
+  return new Error(message);
+}
 
+/** Site-wide parts: site, nav, footer, contact, redirects. */
+export async function getPublicSite(
+  options?: PublicFetchOptions,
+): Promise<PublicSiteResponse> {
+  const response = await fetchPublic('', new URLSearchParams(), options);
+  if (!response.ok) {
+    throw await failure(response);
+  }
   return (await response.json()) as PublicSiteResponse;
+}
+
+/**
+ * The one document at `path`, or `null` when Payload answers 404.
+ * Any other failure throws, so an outage is never rendered (or cached)
+ * as "Not found".
+ */
+export async function getPublicDoc(
+  path: string,
+  options?: PublicFetchOptions,
+): Promise<PublicDocResponse | null> {
+  const response = await fetchPublic(
+    '/doc',
+    new URLSearchParams({ path }),
+    options,
+  );
+  if (response.status === 404) {
+    // Unknown site is a 404 too; that must fail loudly, not look like a missing page.
+    const body = (await response
+      .clone()
+      .json()
+      .catch(() => ({}))) as PublicApiErrorBody;
+    if (body.error === 'Document not found') {
+      return null;
+    }
+    throw await failure(response);
+  }
+  if (!response.ok) {
+    throw await failure(response);
+  }
+  return (await response.json()) as PublicDocResponse;
 }

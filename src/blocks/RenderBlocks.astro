@@ -1,14 +1,13 @@
 ---
-import type { PublicLayoutBlock, PublicPage } from '../lib/payload';
+import type { PublicLayoutBlock } from '../lib/payload';
 import { pickTemplate } from '../lib/templates';
 
 interface Props {
   blocks?: PublicLayoutBlock[] | null;
-  pages: PublicPage[];
   origin: string;
 }
 
-const { blocks, pages, origin } = Astro.props;
+const { blocks, origin } = Astro.props;
 const list = blocks ?? [];
 ---
 
@@ -37,7 +36,7 @@ const list = blocks ?? [];
         ? block.id
         : index;
     return (
-      <Component block={block} pages={pages} origin={origin} key={key} />
+      <Component block={block} origin={origin} key={key} />
     );
   })
 }

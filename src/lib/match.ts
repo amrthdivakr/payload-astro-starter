@@ -1,4 +1,4 @@
-import type { PublicPage, PublicRedirect } from './payload';
+import type { PublicDocRef, PublicRedirect } from './payload';
 
 /** Strip trailing slashes except for root `/`. */
 export function normalizePath(path: string): string {
@@ -8,32 +8,19 @@ export function normalizePath(path: string): string {
   return path.replace(/\/+$/, '') || '/';
 }
 
-export function findPageByPath(
-  pages: PublicPage[],
-  pathname: string,
-): PublicPage | undefined {
-  const normalized = normalizePath(pathname);
-  return pages.find((page) => normalizePath(page.path) === normalized);
-}
-
+/** Path of a populated reference. A bare id means Payload didn't populate it: no link. */
 function resolveReferencePath(
-  value: number | { id: number; path: string },
-  pages: PublicPage[],
+  value: number | PublicDocRef,
 ): string | undefined {
   if (typeof value === 'number') {
-    const page = pages.find((p) => p.id === value);
-    return page ? normalizePath(page.path) : undefined;
+    return undefined;
   }
-  if (value.path) {
-    return normalizePath(value.path);
-  }
-  return undefined;
+  return value.path ? normalizePath(value.path) : undefined;
 }
 
 /** Destination path or URL for a redirect, or undefined if unusable. */
 export function resolveRedirectDestination(
   redirect: PublicRedirect,
-  pages: PublicPage[],
 ): string | undefined {
   const to = redirect.to;
   if (!to?.type) {
@@ -50,7 +37,7 @@ export function resolveRedirectDestination(
     if (ref == null) {
       return undefined;
     }
-    return resolveReferencePath(ref, pages);
+    return resolveReferencePath(ref);
   }
 
   return undefined;
@@ -67,10 +54,9 @@ export function findRedirectByFrom(
 /** Skip redirect when destination is missing or same as current path. */
 export function redirectDestinationIfValid(
   redirect: PublicRedirect,
-  pages: PublicPage[],
   currentPathname: string,
 ): string | undefined {
-  const destination = resolveRedirectDestination(redirect, pages);
+  const destination = resolveRedirectDestination(redirect);
   if (!destination) {
     return undefined;
   }

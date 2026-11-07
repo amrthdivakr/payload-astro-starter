@@ -1,5 +1,5 @@
 ---
-import type { PublicFooter, PublicLinkRow, PublicPage } from '../lib/payload';
+import type { PublicFooter, PublicLinkRow } from '../lib/payload';
 import {
   hrefFromLink,
   linkLabel,
@@ -9,11 +9,10 @@ import {
 
 interface Props {
   footer: PublicFooter;
-  pages: PublicPage[];
   origin: string;
 }
 
-const { footer, pages, origin } = Astro.props;
+const { footer, origin } = Astro.props;
 
 function footerLogo(f: NonNullable<PublicFooter>) {
   if (!f.logo || typeof f.logo !== 'object') {
@@ -35,7 +34,7 @@ function linkListRows(rows: PublicLinkRow[] | undefined) {
       if (!label) return null;
       return {
         label,
-        href: hrefFromLink(row, pages),
+        href: hrefFromLink(row),
         newTab: linkOpensNewTab(row),
       };
     })

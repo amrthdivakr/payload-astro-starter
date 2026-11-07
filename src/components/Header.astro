@@ -1,5 +1,5 @@
 ---
-import type { PublicNav, PublicNavItem, PublicPage } from '../lib/payload';
+import type { PublicNav, PublicNavItem } from '../lib/payload';
 import {
   hrefFromLink,
   linkLabel,
@@ -9,11 +9,10 @@ import {
 
 interface Props {
   nav: PublicNav;
-  pages: PublicPage[];
   origin: string;
 }
 
-const { nav, pages, origin } = Astro.props;
+const { nav, origin } = Astro.props;
 
 function logoFromNav(n: NonNullable<PublicNav>) {
   if (!n.logo || typeof n.logo !== 'object') {
@@ -30,7 +29,7 @@ function logoFromNav(n: NonNullable<PublicNav>) {
 function renderNavItem(item: PublicNavItem) {
   const label = linkLabel(item);
   if (!label) return null;
-  const href = hrefFromLink(item, pages);
+  const href = hrefFromLink(item);
   const newTab = linkOpensNewTab(item);
   const children = item.children?.filter((c) => linkLabel(c)) ?? [];
   return { label, href, newTab, children };
@@ -38,7 +37,7 @@ function renderNavItem(item: PublicNavItem) {
 
 const navData = nav ? logoFromNav(nav) : { src: undefined, alt: '' };
 const items = nav?.items?.map(renderNavItem).filter(Boolean) ?? [];
-const ctaHref = nav?.cta ? hrefFromLink(nav.cta, pages) : undefined;
+const ctaHref = nav?.cta ? hrefFromLink(nav.cta) : undefined;
 const ctaLabel = nav?.cta ? linkLabel(nav.cta) : undefined;
 const ctaNewTab = nav?.cta ? linkOpensNewTab(nav.cta) : false;
 const showCta = Boolean(ctaHref && ctaLabel);
@@ -74,7 +73,7 @@ const showCta = Boolean(ctaHref && ctaLabel);
                       {entry.children.map((child) => {
                         const childLabel = linkLabel(child);
                         if (!childLabel) return null;
-                        const childHref = hrefFromLink(child, pages);
+                        const childHref = hrefFromLink(child);
                         const childNewTab = linkOpensNewTab(child);
                         return (
                           <li>

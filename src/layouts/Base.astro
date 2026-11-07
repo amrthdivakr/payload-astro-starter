@@ -2,19 +2,18 @@
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import PreviewBar from '../components/PreviewBar.astro';
-import type { PublicFooter, PublicNav, PublicPage } from '../lib/payload';
+import type { PublicFooter, PublicNav } from '../lib/payload';
 
 interface Props {
   title: string;
   nav: PublicNav;
   footer: PublicFooter;
-  pages: PublicPage[];
   origin: string;
   /** Passed by the catch-all; overlay layouts use it for homepage-only chrome. */
   isHomepage?: boolean;
 }
 
-const { title, nav, footer, pages, origin } = Astro.props;
+const { title, nav, footer, origin } = Astro.props;
 ---
 
 <html lang="en">
@@ -28,10 +27,10 @@ const { title, nav, footer, pages, origin } = Astro.props;
   </head>
   <body>
     <PreviewBar />
-    <Header nav={nav} pages={pages} origin={origin} />
+    <Header nav={nav} origin={origin} />
     <main>
       <slot />
     </main>
-    <Footer footer={footer} pages={pages} origin={origin} />
+    <Footer footer={footer} origin={origin} />
   </body>
 </html>
