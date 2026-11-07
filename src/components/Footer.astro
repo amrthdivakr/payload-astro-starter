@@ -13,6 +13,7 @@ interface Props {
 }
 
 const { footer, origin } = Astro.props;
+const { prefix } = Astro.locals;
 
 function footerLogo(f: NonNullable<PublicFooter>) {
   if (!f.logo || typeof f.logo !== 'object') {
@@ -34,7 +35,7 @@ function linkListRows(rows: PublicLinkRow[] | undefined) {
       if (!label) return null;
       return {
         label,
-        href: hrefFromLink(row),
+        href: hrefFromLink(row, prefix),
         newTab: linkOpensNewTab(row),
       };
     })

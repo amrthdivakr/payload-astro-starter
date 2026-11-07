@@ -15,6 +15,7 @@ interface Props {
 }
 
 const { block, origin } = Astro.props;
+const { prefix } = Astro.locals;
 
 function mediaImages(
   items: PublicSectionBlock['media'],
@@ -38,7 +39,7 @@ function linkRows(rows: PublicLinkRow[] | null | undefined) {
   return rows
     .map((row) => {
       const label = linkLabel(row);
-      const href = hrefFromLink(row);
+      const href = hrefFromLink(row, prefix);
       if (!label || !href) return null;
       return { label, href, newTab: linkOpensNewTab(row) };
     })
@@ -48,7 +49,7 @@ function linkRows(rows: PublicLinkRow[] | null | undefined) {
 const eyebrow = textField(block.eyebrow);
 const heading = textField(block.heading);
 const subheading = textField(block.subheading);
-const contentHtml = lexicalToHtml(block.content);
+const contentHtml = lexicalToHtml(block.content, prefix);
 const images = mediaImages(block.media, block.backgroundMedia);
 const links = linkRows(block.links);
 ---

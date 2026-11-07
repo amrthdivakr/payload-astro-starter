@@ -11,12 +11,16 @@ interface Props {
   origin: string;
   /** Passed by the catch-all; overlay layouts use it for homepage-only chrome. */
   isHomepage?: boolean;
+  /** `<html lang>`: the request's locale. */
+  lang: string;
+  /** `hreflang` alternates; empty on a one-locale site or a 404. */
+  alternates?: { hreflang: string; href: string }[];
 }
 
-const { title, nav, footer, origin } = Astro.props;
+const { title, nav, footer, origin, lang, alternates = [] } = Astro.props;
 ---
 
-<html lang="en">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -24,6 +28,11 @@ const { title, nav, footer, origin } = Astro.props;
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    {
+      alternates.map((alt) => (
+        <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />
+      ))
+    }
   </head>
   <body>
     <PreviewBar />

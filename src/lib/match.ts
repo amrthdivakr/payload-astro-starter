@@ -1,4 +1,5 @@
 import type { PublicDocRef, PublicRedirect } from './payload';
+import { withPrefix } from './locale';
 
 /** Strip trailing slashes except for root `/`. */
 export function normalizePath(path: string): string {
@@ -8,19 +9,27 @@ export function normalizePath(path: string): string {
   return path.replace(/\/+$/, '') || '/';
 }
 
-/** Path of a populated reference. A bare id means Payload didn't populate it: no link. */
+/**
+ * Path of a populated reference, with the locale prefix.
+ * A bare id means Payload didn't populate it: no link.
+ */
 function resolveReferencePath(
   value: number | PublicDocRef,
+  prefix: string,
 ): string | undefined {
   if (typeof value === 'number') {
     return undefined;
   }
-  return value.path ? normalizePath(value.path) : undefined;
+  return value.path ? withPrefix(normalizePath(value.path), prefix) : undefined;
 }
 
-/** Destination path or URL for a redirect, or undefined if unusable. */
+/**
+ * Destination path or URL for a redirect, or undefined if unusable.
+ * A reference gets `prefix` (the locale's); a custom URL stays as typed.
+ */
 export function resolveRedirectDestination(
   redirect: PublicRedirect,
+  prefix: string,
 ): string | undefined {
   const to = redirect.to;
   if (!to?.type) {
@@ -37,7 +46,7 @@ export function resolveRedirectDestination(
     if (ref == null) {
       return undefined;
     }
-    return resolveReferencePath(ref);
+    return resolveReferencePath(ref, prefix);
   }
 
   return undefined;
@@ -51,12 +60,16 @@ export function findRedirectByFrom(
   return redirects.find((r) => normalizePath(r.from) === normalized);
 }
 
-/** Skip redirect when destination is missing or same as current path. */
+/**
+ * Skip redirect when destination is missing or same as the current request
+ * path (`currentPathname` is the full path, prefix included).
+ */
 export function redirectDestinationIfValid(
   redirect: PublicRedirect,
   currentPathname: string,
+  prefix: string,
 ): string | undefined {
-  const destination = resolveRedirectDestination(redirect);
+  const destination = resolveRedirectDestination(redirect, prefix);
   if (!destination) {
     return undefined;
   }

@@ -4,8 +4,8 @@ export type PublicSite = {
   id: number;
   name: string;
   slug: string;
-  locales?: string[];
-  defaultLocale?: string;
+  locales: string[];
+  defaultLocale: string;
   businessSummary?: string | null;
 };
 
@@ -199,6 +199,8 @@ type PublicApiErrorBody = {
 export type PublicFetchOptions = {
   draft?: boolean;
   token?: string;
+  /** Sent as `?locale=`; Payload uses the site's default locale without it. */
+  locale?: string;
 };
 
 function siteSlug(): string {
@@ -213,7 +215,7 @@ function siteSlug(): string {
 
 /**
  * GET `/api/public/:slug<suffix>`. Adds `draft=true` and the JWT header only
- * when both a draft flag and a token are given. Returns the raw response
+ * when both a draft flag and a token are given, and `locale` when set. Returns the raw response
  * so callers can treat 404 themselves; throws on network errors.
  */
 async function fetchPublic(
@@ -228,6 +230,10 @@ async function fetchPublic(
 
   if (useDraft) {
     params.set('draft', 'true');
+  }
+
+  if (options?.locale) {
+    params.set('locale', options.locale);
   }
 
   const origin = PAYLOAD_URL.replace(/\/+$/, '');

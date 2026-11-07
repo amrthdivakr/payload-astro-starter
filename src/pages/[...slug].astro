@@ -7,6 +7,12 @@ import {
   normalizePath,
   redirectDestinationIfValid,
 } from '../lib/match';
+import {
+  isMultiLocale,
+  localePrefix,
+  splitLocale,
+  withPrefix,
+} from '../lib/locale';
 import Base from '../layouts/Base.astro';
 import Hero from '../components/Hero.astro';
 import RenderBlocks from '../blocks/RenderBlocks.astro';
@@ -15,16 +21,14 @@ const previewActive = Astro.cookies.get('payload-preview')?.value === '1';
 const previewToken = Astro.cookies.get('payload-token')?.value ?? '';
 const inPreview = previewActive && previewToken.length > 0;
 
-const fetchOptions: PublicFetchOptions | undefined = inPreview
+const fetchOptions: PublicFetchOptions = inPreview
   ? { draft: true, token: previewToken }
-  : undefined;
+  : {};
 
 const pathname = normalizePath(Astro.url.pathname);
 
-const [data, found] = await Promise.all([
-  getPublicSite(fetchOptions),
-  getPublicDoc(pathname, fetchOptions),
-]);
+// Site in its default locale first: it gives the site's locale list.
+const base = await getPublicSite(fetchOptions);
 
 if (inPreview) {
   Astro.cache.set(false);
@@ -32,10 +36,38 @@ if (inPreview) {
   Astro.cache.set({ maxAge: 3600, tags: ['payload'] });
 }
 
-if (!found) {
-  const redirect = findRedirectByFrom(data.redirects, pathname);
+const route = splitLocale(pathname, base.site);
+
+if (!route) {
+  // Multi-locale site, no locale prefix: a listed redirect first, else the
+  // same path in the default locale (`/` → `/en`). An unknown prefix
+  // (`/de/x`) goes the same way and ends as a 404 there.
+  const defaultPrefix = localePrefix(base.site.defaultLocale, base.site);
+  const redirect = findRedirectByFrom(base.redirects, pathname);
   const destination = redirect
-    ? redirectDestinationIfValid(redirect, pathname)
+    ? redirectDestinationIfValid(redirect, pathname, defaultPrefix)
+    : undefined;
+  return Astro.redirect(destination ?? withPrefix(pathname, defaultPrefix));
+}
+
+const localeOptions: PublicFetchOptions = {
+  ...fetchOptions,
+  locale: route.locale,
+};
+
+const [data, found] = await Promise.all([
+  route.locale === base.locale ? base : getPublicSite(localeOptions),
+  getPublicDoc(route.path, localeOptions),
+]);
+
+const prefix = localePrefix(route.locale, data.site);
+Astro.locals.locale = route.locale;
+Astro.locals.prefix = prefix;
+
+if (!found) {
+  const redirect = findRedirectByFrom(data.redirects, route.path);
+  const destination = redirect
+    ? redirectDestinationIfValid(redirect, pathname, prefix)
     : undefined;
 
   if (destination) {
@@ -44,6 +76,32 @@ if (!found) {
 
   Astro.response.status = 404;
 }
+
+// hreflang: the locales this doc is published in, in the site's order.
+const alternates =
+  found && isMultiLocale(data.site)
+    ? (() => {
+        const published = data.site.locales.filter((locale) =>
+          found.availableLocales.includes(locale),
+        );
+        const hrefFor = (locale: string) =>
+          new URL(
+            withPrefix(route.path, localePrefix(locale, data.site)),
+            Astro.url.origin,
+          ).href;
+        const list = published.map((locale) => ({
+          hreflang: locale,
+          href: hrefFor(locale),
+        }));
+        if (published.includes(data.site.defaultLocale)) {
+          list.push({
+            hreflang: 'x-default',
+            href: hrefFor(data.site.defaultLocale),
+          });
+        }
+        return list;
+      })()
+    : [];
 
 const page = found?.collection === 'pages' ? found.doc : undefined;
 const docTitle = found?.doc.title ?? undefined;
@@ -59,6 +117,8 @@ const title = found
   footer={data.footer}
   origin={PAYLOAD_URL}
   isHomepage={page?.isHomepage === true}
+  lang={route.locale}
+  alternates={alternates}
 >
   {
     page && (

@@ -1,5 +1,6 @@
 import { PAYLOAD_URL } from 'astro:env/server';
 import { normalizePath } from './match';
+import { withPrefix } from './locale';
 
 type LinkPayload = {
   type?: string;
@@ -23,17 +24,25 @@ function unwrapLink(link: unknown): unknown {
   return link;
 }
 
-/** Path of a populated reference. A bare id means Payload didn't populate it: no link. */
+/**
+ * Path of a populated reference, with the current locale's prefix.
+ * A bare id means Payload didn't populate it: no link.
+ */
 function resolveReferencePath(
   value: number | { path?: string | null },
+  prefix: string,
 ): string | undefined {
   if (typeof value === 'number') {
     return undefined;
   }
-  return value.path ? normalizePath(value.path) : undefined;
+  return value.path ? withPrefix(normalizePath(value.path), prefix) : undefined;
 }
 
-export function hrefFromLink(link: unknown): string | undefined {
+/**
+ * href for a link field. `prefix` is the current locale's (`Astro.locals.prefix`):
+ * only references get it; custom URLs stay as typed, files are media URLs.
+ */
+export function hrefFromLink(link: unknown, prefix: string): string | undefined {
   const raw = unwrapLink(link);
   if (!raw || typeof raw !== 'object') {
     return undefined;
@@ -54,7 +63,7 @@ export function hrefFromLink(link: unknown): string | undefined {
     if (ref == null) {
       return undefined;
     }
-    return resolveReferencePath(ref);
+    return resolveReferencePath(ref, prefix);
   }
 
   return undefined;
@@ -172,28 +181,28 @@ const FORMAT_TAGS: Array<[number, string]> = [
 
 const HEADING_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
 
-function lexicalLinkHref(node: LexicalNode): string | undefined {
+function lexicalLinkHref(node: LexicalNode, prefix: string): string | undefined {
   const fields = node.fields;
   if (!fields) {
     return undefined;
   }
   if (fields.linkType === 'internal') {
-    return hrefFromLink({ type: 'reference', reference: fields.doc });
+    return hrefFromLink({ type: 'reference', reference: fields.doc }, prefix);
   }
-  return hrefFromLink({ type: 'custom', url: fields.url });
+  return hrefFromLink({ type: 'custom', url: fields.url }, prefix);
 }
 
-function renderChildren(node: LexicalNode): string {
+function renderChildren(node: LexicalNode, prefix: string): string {
   if (!Array.isArray(node.children)) {
     return '';
   }
   return node.children
     .filter((child): child is LexicalNode => !!child && typeof child === 'object')
-    .map((child) => renderNode(child))
+    .map((child) => renderNode(child, prefix))
     .join('');
 }
 
-function renderNode(node: LexicalNode): string {
+function renderNode(node: LexicalNode, prefix: string): string {
   switch (node.type) {
     case 'text': {
       if (typeof node.text !== 'string' || !node.text) return '';
@@ -209,28 +218,28 @@ function renderNode(node: LexicalNode): string {
     case 'tab':
       return '\t';
     case 'paragraph': {
-      const inner = renderChildren(node);
+      const inner = renderChildren(node, prefix);
       return inner ? `<p>${inner}</p>` : '';
     }
     case 'heading': {
       const tag = node.tag && HEADING_TAGS.has(node.tag) ? node.tag : 'h2';
-      const inner = renderChildren(node);
+      const inner = renderChildren(node, prefix);
       return inner ? `<${tag}>${inner}</${tag}>` : '';
     }
     case 'quote': {
-      const inner = renderChildren(node);
+      const inner = renderChildren(node, prefix);
       return inner ? `<blockquote>${inner}</blockquote>` : '';
     }
     case 'list': {
       const tag = node.listType === 'number' || node.tag === 'ol' ? 'ol' : 'ul';
-      return `<${tag}>${renderChildren(node)}</${tag}>`;
+      return `<${tag}>${renderChildren(node, prefix)}</${tag}>`;
     }
     case 'listitem':
-      return `<li>${renderChildren(node)}</li>`;
+      return `<li>${renderChildren(node, prefix)}</li>`;
     case 'link':
     case 'autolink': {
-      const inner = renderChildren(node);
-      const href = lexicalLinkHref(node);
+      const inner = renderChildren(node, prefix);
+      const href = lexicalLinkHref(node, prefix);
       if (!href) return inner;
       const target = node.fields?.newTab
         ? ' target="_blank" rel="noopener noreferrer"'
@@ -238,18 +247,18 @@ function renderNode(node: LexicalNode): string {
       return `<a href="${escapeHtml(href)}"${target}>${inner}</a>`;
     }
     default:
-      return renderChildren(node);
+      return renderChildren(node, prefix);
   }
 }
 
 /**
  * Lexical rich text → HTML: paragraphs, headings, quotes, lists, links,
  * bold / italic / underline / strikethrough / code, line breaks.
- * Internal links use the populated doc's `path`.
+ * Internal links use the populated doc's `path` with `prefix` (the current locale's).
  */
-export function lexicalToHtml(value: unknown): string {
+export function lexicalToHtml(value: unknown, prefix: string): string {
   return lexicalRootChildren(value)
-    .map((node) => renderNode(node))
+    .map((node) => renderNode(node, prefix))
     .join('');
 }
 
