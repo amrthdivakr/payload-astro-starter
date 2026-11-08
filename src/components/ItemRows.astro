@@ -24,7 +24,7 @@ const rows =
       const rowEyebrow = textField(item.eyebrow);
       const title = textField(item.title);
       const subtitle = textField(item.subtitle);
-      const textHtml = lexicalToHtml(item.text, prefix);
+      const textHtml = lexicalToHtml(item.text, prefix, origin);
       let image: { src: string; alt: string } | undefined;
       if (item.media && typeof item.media === 'object') {
         const src = mediaUrl(item.media, origin);

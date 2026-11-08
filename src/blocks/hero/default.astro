@@ -50,7 +50,7 @@ function linkRows(rows: PublicLinkRow[] | null | undefined) {
 const eyebrow = textField(hero.eyebrow);
 const heading = textField(hero.heading);
 const subheading = textField(hero.subheading);
-const contentHtml = lexicalToHtml(hero.content, prefix);
+const contentHtml = lexicalToHtml(hero.content, prefix, origin);
 const images = mediaImages(hero.media, hero.backgroundMedia);
 const links = linkRows(hero.links);
 ---

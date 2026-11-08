@@ -129,6 +129,8 @@ type LexicalNode = {
     doc?: LinkPayload['reference'];
   } | null;
   children?: unknown[];
+  /** Upload node: the media doc (populated) or its id. */
+  value?: unknown;
 };
 
 function lexicalRootChildren(value: unknown): LexicalNode[] {
@@ -192,17 +194,26 @@ function lexicalLinkHref(node: LexicalNode, prefix: string): string | undefined 
   return hrefFromLink({ type: 'custom', url: fields.url }, prefix);
 }
 
-function renderChildren(node: LexicalNode, prefix: string): string {
+function renderChildren(node: LexicalNode, prefix: string, origin: string): string {
   if (!Array.isArray(node.children)) {
     return '';
   }
   return node.children
     .filter((child): child is LexicalNode => !!child && typeof child === 'object')
-    .map((child) => renderNode(child, prefix))
+    .map((child) => renderNode(child, prefix, origin))
     .join('');
 }
 
-function renderNode(node: LexicalNode, prefix: string): string {
+const ALIGN = new Set(['left', 'center', 'right', 'justify', 'start', 'end']);
+
+/** ` style="text-align: …"` for a block node's alignment (Lexical `format` string), or ''. */
+function alignAttr(node: LexicalNode): string {
+  return typeof node.format === 'string' && ALIGN.has(node.format)
+    ? ` style="text-align: ${node.format}"`
+    : '';
+}
+
+function renderNode(node: LexicalNode, prefix: string, origin: string): string {
   switch (node.type) {
     case 'text': {
       if (typeof node.text !== 'string' || !node.text) return '';
@@ -218,27 +229,41 @@ function renderNode(node: LexicalNode, prefix: string): string {
     case 'tab':
       return '\t';
     case 'paragraph': {
-      const inner = renderChildren(node, prefix);
-      return inner ? `<p>${inner}</p>` : '';
+      const inner = renderChildren(node, prefix, origin);
+      return inner ? `<p${alignAttr(node)}>${inner}</p>` : '';
     }
     case 'heading': {
       const tag = node.tag && HEADING_TAGS.has(node.tag) ? node.tag : 'h2';
-      const inner = renderChildren(node, prefix);
-      return inner ? `<${tag}>${inner}</${tag}>` : '';
+      const inner = renderChildren(node, prefix, origin);
+      return inner ? `<${tag}${alignAttr(node)}>${inner}</${tag}>` : '';
     }
     case 'quote': {
-      const inner = renderChildren(node, prefix);
-      return inner ? `<blockquote>${inner}</blockquote>` : '';
+      const inner = renderChildren(node, prefix, origin);
+      return inner ? `<blockquote${alignAttr(node)}>${inner}</blockquote>` : '';
     }
     case 'list': {
       const tag = node.listType === 'number' || node.tag === 'ol' ? 'ol' : 'ul';
-      return `<${tag}>${renderChildren(node, prefix)}</${tag}>`;
+      return `<${tag}${alignAttr(node)}>${renderChildren(node, prefix, origin)}</${tag}>`;
     }
     case 'listitem':
-      return `<li>${renderChildren(node, prefix)}</li>`;
+      return `<li>${renderChildren(node, prefix, origin)}</li>`;
+    case 'horizontalrule':
+      return '<hr>';
+    case 'upload': {
+      // Needs the media doc (depth ≥ 1); an id alone has no URL.
+      const media = node.value as { url?: string | null; alt?: string | null; mimeType?: string | null } | null;
+      if (!media || typeof media !== 'object') return '';
+      const src = mediaUrl(media, origin);
+      if (!src) return '';
+      if (media.mimeType && !media.mimeType.startsWith('image/')) {
+        return `<p><a href="${escapeHtml(src)}">${escapeHtml(media.alt || src)}</a></p>`;
+      }
+      const align = typeof node.format === 'string' && ALIGN.has(node.format) ? ` style="text-align: ${node.format}"` : '';
+      return `<figure${align}><img src="${escapeHtml(src)}" alt="${escapeHtml(media.alt ?? '')}" loading="lazy"></figure>`;
+    }
     case 'link':
     case 'autolink': {
-      const inner = renderChildren(node, prefix);
+      const inner = renderChildren(node, prefix, origin);
       const href = lexicalLinkHref(node, prefix);
       if (!href) return inner;
       const target = node.fields?.newTab
@@ -247,18 +272,20 @@ function renderNode(node: LexicalNode, prefix: string): string {
       return `<a href="${escapeHtml(href)}"${target}>${inner}</a>`;
     }
     default:
-      return renderChildren(node, prefix);
+      return renderChildren(node, prefix, origin);
   }
 }
 
 /**
  * Lexical rich text → HTML: paragraphs, headings, quotes, lists, links,
- * bold / italic / underline / strikethrough / code, line breaks.
+ * bold / italic / underline / strikethrough / code, line breaks, horizontal
+ * rules, images (upload nodes; `origin` resolves root-relative media URLs) and
+ * text alignment.
  * Internal links use the populated doc's `path` with `prefix` (the current locale's).
  */
-export function lexicalToHtml(value: unknown, prefix: string): string {
+export function lexicalToHtml(value: unknown, prefix: string, origin = ''): string {
   return lexicalRootChildren(value)
-    .map((node) => renderNode(node, prefix))
+    .map((node) => renderNode(node, prefix, origin))
     .join('');
 }
 
